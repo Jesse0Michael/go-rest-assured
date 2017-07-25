@@ -1,0 +1,13 @@
+package: github.com/jesse0michael/go-rest-assured
+import:
+- package: github.com/gorilla/handlers
+- package: github.com/gorilla/mux
+  version: master
+- package: github.com/stretchr/testify
+  version: master
+- package: github.com/go-kit/kit
+  version: master
+  subpackages:
+  - log
+  - transport/http
+  - endpoint

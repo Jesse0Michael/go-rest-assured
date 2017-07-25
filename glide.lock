@@ -1,0 +1,26 @@
+hash: be2e61c18cb37ff8d388e7bfd2e56554e242253d3c984da756b104f4f39a9f32
+updated: 2017-07-25T08:31:22.589577904-07:00
+imports:
+- name: github.com/go-kit/kit
+  version: e10f5bf035be9af21fd5b2fb4469d5716c6ab07d
+  subpackages:
+  - endpoint
+  - log
+  - transport/http
+- name: github.com/go-logfmt/logfmt
+  version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
+- name: github.com/go-stack/stack
+  version: 817915b46b97fd7bb80e8ab6b69f01a53ac3eebf
+- name: github.com/gorilla/context
+  version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
+- name: github.com/gorilla/handlers
+  version: a4d79d4487c2430a17d9dc8a1f74d1a6ed6908ca
+- name: github.com/gorilla/mux
+  version: ac112f7d75a0714af1bd86ab17749b31f7809640
+- name: github.com/kr/logfmt
+  version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
+- name: github.com/stretchr/testify
+  version: 05e8a0eda380579888eb53c394909df027f06991
+- name: golang.org/x/net
+  version: ab5485076ff3407ad2d02db054635913f017b0ed
+testImports: []
