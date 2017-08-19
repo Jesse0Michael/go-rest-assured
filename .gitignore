@@ -1,3 +1,5 @@
-bin/go-rest-assured
+bin/
 coverage/
 vendor/
+.vscode/
+debug

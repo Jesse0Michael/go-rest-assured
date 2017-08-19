@@ -13,59 +13,82 @@ type AssuredCall struct {
 	StatusCode int
 }
 
+// AssuredEndpoints
 type AssuredEndpoints struct {
 	logger       kitlog.Logger
-	assuredCalls map[string]*AssuredCall
-	madeCalls    map[string]*AssuredCall
+	assuredCalls map[string][]*AssuredCall
+	madeCalls    map[string][]*AssuredCall
 }
 
+// NewAssuredEndpoints creates a new instance of assured endpoints
 func NewAssuredEndpoints(l kitlog.Logger) *AssuredEndpoints {
 	return &AssuredEndpoints{
 		logger:       l,
-		assuredCalls: map[string]*AssuredCall{},
-		madeCalls:    map[string]*AssuredCall{},
+		assuredCalls: map[string][]*AssuredCall{},
+		madeCalls:    map[string][]*AssuredCall{},
 	}
 }
 
-func (a AssuredEndpoints) GivenEndpoint(ctx context.Context, call *AssuredCall) (*AssuredCall, error) {
-	a.assuredCalls[call.Path] = call
-	a.logger.Log("assured call for path: %s", call.Path)
+// GivenEndpoint is used to stub out a call for a given path
+func (a AssuredEndpoints) GivenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+	call, ok := i.(*AssuredCall)
+	if !ok {
+		return nil, errors.New("unable to convert request to AssuredCall")
+	}
+	a.assuredCalls[call.Path] = append(a.assuredCalls[call.Path], call)
+	a.logger.Log("message", "assured call set", "path", call.Path)
 
 	return call, nil
 }
 
-func (a AssuredEndpoints) WhenEndpoint(ctx context.Context, call *AssuredCall) (*AssuredCall, error) {
-	if a.assuredCalls[call.Path] == nil {
-		a.logger.Log("assured call not found for path: %s", call.Path)
+// WhenEndpoint is used to test the assured calls
+func (a AssuredEndpoints) WhenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+	call, ok := i.(*AssuredCall)
+	if !ok {
+		return nil, errors.New("unable to convert request to AssuredCall")
+	}
+	if a.assuredCalls[call.Path] == nil || len(a.assuredCalls[call.Path]) == 0 {
+		a.logger.Log("message", "assured call not found", "path", call.Path)
 		return nil, errors.New("No assured calls")
 	}
 
-	a.madeCalls[call.Path] = call
+	a.madeCalls[call.Path] = append(a.madeCalls[call.Path], call)
 
-	return a.assuredCalls[call.Path], nil
+	assured := a.assuredCalls[call.Path][0]
+
+	a.assuredCalls[call.Path] = append(a.assuredCalls[call.Path][1:], assured)
+
+	return assured, nil
 }
 
-func (a AssuredEndpoints) ThenEndpoint(ctx context.Context, call *AssuredCall) (*AssuredCall, error) {
-	if a.madeCalls[call.Path] == nil {
-		a.logger.Log("made call not found for path: %s", call.Path)
-		return nil, errors.New("No made calls")
+// ThenEndpoint is used to verify a particular call
+func (a AssuredEndpoints) ThenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+	call, ok := i.(*AssuredCall)
+	if !ok {
+		return nil, errors.New("unable to convert request to AssuredCall")
 	}
 
 	return a.madeCalls[call.Path], nil
 }
 
-func (a AssuredEndpoints) ClearEndpoint(ctx context.Context, call *AssuredCall) (*AssuredCall, error) {
-	a.assuredCalls[call.Path] = nil
-	a.madeCalls[call.Path] = nil
-	a.logger.Log("Cleared calls for path: %s", call.Path)
+//ClearEndpoint is used to clear a specific assured call
+func (a AssuredEndpoints) ClearEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+	call, ok := i.(*AssuredCall)
+	if !ok {
+		return nil, errors.New("unable to convert request to AssuredCall")
+	}
+	a.assuredCalls[call.Path] = []*AssuredCall{}
+	a.madeCalls[call.Path] = []*AssuredCall{}
+	a.logger.Log("message", "cleared calls for path", "path", call.Path)
 
 	return nil, nil
 }
 
+//ClearAllEndpoint is used to clear all assured calls
 func (a AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
-	a.assuredCalls = map[string]*AssuredCall{}
-	a.madeCalls = map[string]*AssuredCall{}
-	a.logger.Log("Cleared all calls")
+	a.assuredCalls = map[string][]*AssuredCall{}
+	a.madeCalls = map[string][]*AssuredCall{}
+	a.logger.Log("message", "cleared all calls")
 
 	return nil, nil
 }

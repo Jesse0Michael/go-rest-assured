@@ -1,8 +1,8 @@
-hash: be2e61c18cb37ff8d388e7bfd2e56554e242253d3c984da756b104f4f39a9f32
-updated: 2017-07-25T08:31:22.589577904-07:00
+hash: b8d28b462db121c1427751ec35a0bb47eb50703d922892a6c2d8497e68ecc047
+updated: 2017-08-18T21:45:54.471533715-07:00
 imports:
 - name: github.com/go-kit/kit
-  version: e10f5bf035be9af21fd5b2fb4469d5716c6ab07d
+  version: f01651a61ac759c6b508539bddda24f63ea34bbb
   subpackages:
   - endpoint
   - log
@@ -12,7 +12,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 817915b46b97fd7bb80e8ab6b69f01a53ac3eebf
 - name: github.com/gorilla/context
-  version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/handlers
   version: a4d79d4487c2430a17d9dc8a1f74d1a6ed6908ca
 - name: github.com/gorilla/mux
@@ -20,7 +20,9 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/stretchr/testify
-  version: 05e8a0eda380579888eb53c394909df027f06991
+  version: 890a5c3458b43e6104ff5da8dfa139d013d77544
 - name: golang.org/x/net
-  version: ab5485076ff3407ad2d02db054635913f017b0ed
+  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
+  subpackages:
+  - context
 testImports: []

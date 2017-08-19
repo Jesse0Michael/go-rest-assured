@@ -13,8 +13,6 @@ import (
 
 func main() {
 	logger := kitlog.NewLogfmtLogger(os.Stdout)
-	logger.Log("message", "go-rest-assured started")
-
 	rootCtx := context.Background()
 
 	errc := make(chan error)
