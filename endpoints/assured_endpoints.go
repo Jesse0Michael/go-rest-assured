@@ -9,7 +9,7 @@ import (
 
 type AssuredCall struct {
 	Path       string
-	Response   map[string]interface{}
+	Response   interface{}
 	StatusCode int
 }
 
@@ -30,7 +30,7 @@ func NewAssuredEndpoints(l kitlog.Logger) *AssuredEndpoints {
 }
 
 // GivenEndpoint is used to stub out a call for a given path
-func (a AssuredEndpoints) GivenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
 	call, ok := i.(*AssuredCall)
 	if !ok {
 		return nil, errors.New("unable to convert request to AssuredCall")
@@ -42,7 +42,7 @@ func (a AssuredEndpoints) GivenEndpoint(ctx context.Context, i interface{}) (int
 }
 
 // WhenEndpoint is used to test the assured calls
-func (a AssuredEndpoints) WhenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
 	call, ok := i.(*AssuredCall)
 	if !ok {
 		return nil, errors.New("unable to convert request to AssuredCall")
@@ -62,7 +62,7 @@ func (a AssuredEndpoints) WhenEndpoint(ctx context.Context, i interface{}) (inte
 }
 
 // ThenEndpoint is used to verify a particular call
-func (a AssuredEndpoints) ThenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+func (a *AssuredEndpoints) ThenEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
 	call, ok := i.(*AssuredCall)
 	if !ok {
 		return nil, errors.New("unable to convert request to AssuredCall")
@@ -72,20 +72,20 @@ func (a AssuredEndpoints) ThenEndpoint(ctx context.Context, i interface{}) (inte
 }
 
 //ClearEndpoint is used to clear a specific assured call
-func (a AssuredEndpoints) ClearEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
 	call, ok := i.(*AssuredCall)
 	if !ok {
 		return nil, errors.New("unable to convert request to AssuredCall")
 	}
-	a.assuredCalls[call.Path] = []*AssuredCall{}
-	a.madeCalls[call.Path] = []*AssuredCall{}
+	delete(a.assuredCalls, call.Path)
+	delete(a.madeCalls, call.Path)
 	a.logger.Log("message", "cleared calls for path", "path", call.Path)
 
 	return nil, nil
 }
 
 //ClearAllEndpoint is used to clear all assured calls
-func (a AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
+func (a *AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
 	a.assuredCalls = map[string][]*AssuredCall{}
 	a.madeCalls = map[string][]*AssuredCall{}
 	a.logger.Log("message", "cleared all calls")
