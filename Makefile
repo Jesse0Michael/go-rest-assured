@@ -7,6 +7,7 @@ endif
 ALL_PACKAGES = \
 	bindings \
 	endpoints \
+	assured \
 
 LDFLAGS = -ldflags '-X main.gitSHA=$(shell git rev-parse HEAD)'
 

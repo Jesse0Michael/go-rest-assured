@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	kitlog "github.com/go-kit/kit/log"
+	"github.com/jesse0michael/go-rest-assured/assured"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,69 +15,96 @@ func TestNewAssuredEndpoints(t *testing.T) {
 	logger := kitlog.NewLogfmtLogger(ioutil.Discard)
 	expected := &AssuredEndpoints{
 		logger:       logger,
-		assuredCalls: map[string][]*AssuredCall{},
-		madeCalls:    map[string][]*AssuredCall{},
+		assuredCalls: map[string][]*assured.Call{},
+		madeCalls:    map[string][]*assured.Call{},
 	}
 	actual := NewAssuredEndpoints(logger)
 
 	require.Equal(t, expected, actual)
 }
 
-func TestGivenEndpointSuccess(t *testing.T) {
-	assured := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+func TestWrappedEndpointSuccess(t *testing.T) {
+	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+	testEndpoint := func(ctx context.Context, call *assured.Call) (interface{}, error) {
+		return call, nil
+	}
 
-	c, err := assured.GivenEndpoint(ctx, call1)
+	actual := endpoints.WrappedEndpoint(testEndpoint)
+	c, err := actual(ctx, call1)
+
+	require.NoError(t, err)
+	require.Equal(t, call1, c)
+}
+
+func TestWrappedEndpointFailure(t *testing.T) {
+	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+	testEndpoint := func(ctx context.Context, call *assured.Call) (interface{}, error) {
+		return call, nil
+	}
+
+	actual := endpoints.WrappedEndpoint(testEndpoint)
+	c, err := actual(ctx, false)
+
+	require.Nil(t, c)
+	require.Error(t, err)
+	require.Equal(t, err.Error(), "unable to convert request to assured Call")
+}
+
+func TestGivenEndpointSuccess(t *testing.T) {
+	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+
+	c, err := endpoints.GivenEndpoint(ctx, call1)
 
 	require.NoError(t, err)
 	require.Equal(t, call1, c)
 
-	c, err = assured.GivenEndpoint(ctx, call2)
+	c, err = endpoints.GivenEndpoint(ctx, call2)
 
 	require.NoError(t, err)
 	require.Equal(t, call2, c)
 
-	c, err = assured.GivenEndpoint(ctx, call3)
+	c, err = endpoints.GivenEndpoint(ctx, call3)
 
 	require.NoError(t, err)
 	require.Equal(t, call3, c)
 
-	require.Equal(t, fullAssuredCalls, assured.assuredCalls)
+	require.Equal(t, fullAssuredCalls, endpoints.assuredCalls)
 }
 
 func TestWhenEndpointSuccess(t *testing.T) {
-	assured := &AssuredEndpoints{
+	endpoints := &AssuredEndpoints{
 		assuredCalls: fullAssuredCalls,
-		madeCalls:    map[string][]*AssuredCall{},
+		madeCalls:    map[string][]*assured.Call{},
 	}
-	expected := map[string][]*AssuredCall{
-		"test/assured":   []*AssuredCall{call2, call1},
-		"teapot/assured": []*AssuredCall{call3},
+	expected := map[string][]*assured.Call{
+		"GET:/test/assured":   []*assured.Call{call2, call1},
+		":/teapot/assured": []*assured.Call{call3},
 	}
 
-	c, err := assured.WhenEndpoint(ctx, call1)
+	c, err := endpoints.WhenEndpoint(ctx, call1)
 
 	require.NoError(t, err)
 	require.Equal(t, call1, c)
-	require.Equal(t, expected, assured.assuredCalls)
+	require.Equal(t, expected, endpoints.assuredCalls)
 
-	c, err = assured.WhenEndpoint(ctx, call2)
+	c, err = endpoints.WhenEndpoint(ctx, call2)
 
 	require.NoError(t, err)
 	require.Equal(t, call2, c)
-	require.Equal(t, fullAssuredCalls, assured.assuredCalls)
+	require.Equal(t, fullAssuredCalls, endpoints.assuredCalls)
 
-	c, err = assured.WhenEndpoint(ctx, call3)
+	c, err = endpoints.WhenEndpoint(ctx, call3)
 
 	require.NoError(t, err)
 	require.Equal(t, call3, c)
-	require.Equal(t, fullAssuredCalls, assured.assuredCalls)
-	require.Equal(t, fullAssuredCalls, assured.madeCalls)
+	require.Equal(t, fullAssuredCalls, endpoints.assuredCalls)
+	require.Equal(t, fullAssuredCalls, endpoints.madeCalls)
 }
 
 func TestWhenEndpointNotFound(t *testing.T) {
-	assured := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
 
-	c, err := assured.WhenEndpoint(ctx, call1)
+	c, err := endpoints.WhenEndpoint(ctx, call1)
 
 	require.Nil(t, c)
 	require.Error(t, err)
@@ -84,86 +112,88 @@ func TestWhenEndpointNotFound(t *testing.T) {
 }
 
 func TestThenEndpointSuccess(t *testing.T) {
-	assured := &AssuredEndpoints{
+	endpoints := &AssuredEndpoints{
 		madeCalls: fullAssuredCalls,
 	}
 
-	c, err := assured.ThenEndpoint(ctx, call1)
+	c, err := endpoints.ThenEndpoint(ctx, call1)
 
 	require.NoError(t, err)
-	require.Equal(t, []*AssuredCall{call1, call2}, c)
+	require.Equal(t, []*assured.Call{call1, call2}, c)
 
-	c, err = assured.ThenEndpoint(ctx, call3)
+	c, err = endpoints.ThenEndpoint(ctx, call3)
 
 	require.NoError(t, err)
-	require.Equal(t, []*AssuredCall{call3}, c)
+	require.Equal(t, []*assured.Call{call3}, c)
 }
 
 func TestClearEndpointSuccess(t *testing.T) {
-	assured := &AssuredEndpoints{
+	endpoints := &AssuredEndpoints{
 		logger:       kitlog.NewLogfmtLogger(ioutil.Discard),
 		assuredCalls: fullAssuredCalls,
 		madeCalls:    fullAssuredCalls,
 	}
-	expected := map[string][]*AssuredCall{
-		"teapot/assured": []*AssuredCall{call3},
+	expected := map[string][]*assured.Call{
+		":/teapot/assured": []*assured.Call{call3},
 	}
 
-	c, err := assured.ClearEndpoint(ctx, call1)
+	c, err := endpoints.ClearEndpoint(ctx, call1)
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, expected, assured.assuredCalls)
-	require.Equal(t, expected, assured.madeCalls)
+	require.Equal(t, expected, endpoints.assuredCalls)
+	require.Equal(t, expected, endpoints.madeCalls)
 
-	c, err = assured.ClearEndpoint(ctx, call2)
-
-	require.NoError(t, err)
-	require.Nil(t, c)
-	require.Equal(t, expected, assured.assuredCalls)
-	require.Equal(t, expected, assured.madeCalls)
-
-	c, err = assured.ClearEndpoint(ctx, call3)
+	c, err = endpoints.ClearEndpoint(ctx, call2)
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, map[string][]*AssuredCall{}, assured.assuredCalls)
-	require.Equal(t, map[string][]*AssuredCall{}, assured.madeCalls)
+	require.Equal(t, expected, endpoints.assuredCalls)
+	require.Equal(t, expected, endpoints.madeCalls)
+
+	c, err = endpoints.ClearEndpoint(ctx, call3)
+
+	require.NoError(t, err)
+	require.Nil(t, c)
+	require.Equal(t, map[string][]*assured.Call{}, endpoints.assuredCalls)
+	require.Equal(t, map[string][]*assured.Call{}, endpoints.madeCalls)
 }
 
 func TestClearAllEndpointSuccess(t *testing.T) {
-	assured := &AssuredEndpoints{
+	endpoints := &AssuredEndpoints{
 		logger:       kitlog.NewLogfmtLogger(ioutil.Discard),
 		assuredCalls: fullAssuredCalls,
 		madeCalls:    fullAssuredCalls,
 	}
 
-	c, err := assured.ClearAllEndpoint(ctx, nil)
+	c, err := endpoints.ClearAllEndpoint(ctx, nil)
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, map[string][]*AssuredCall{}, assured.assuredCalls)
-	require.Equal(t, map[string][]*AssuredCall{}, assured.madeCalls)
+	require.Equal(t, map[string][]*assured.Call{}, endpoints.assuredCalls)
+	require.Equal(t, map[string][]*assured.Call{}, endpoints.madeCalls)
 }
 
 var (
 	ctx   = context.Background()
-	call1 = &AssuredCall{
-		Path:       "test/assured",
+	call1 = &assured.Call{
+		Path:       "/test/assured",
+		Method:     "GET",
 		StatusCode: http.StatusOK,
-		Response:   map[string]interface{}{"assured": true},
+		Response:   []byte(`{"assured": true}`),
 	}
-	call2 = &AssuredCall{
-		Path:       "test/assured",
+	call2 = &assured.Call{
+		Path:       "/test/assured",
+		Method:     "GET",
 		StatusCode: http.StatusConflict,
-		Response:   "error",
+		Response:   []byte("error"),
 	}
-	call3 = &AssuredCall{
-		Path:       "teapot/assured",
+	call3 = &assured.Call{
+		Path:       "/teapot/assured",
 		StatusCode: http.StatusTeapot,
 	}
-	fullAssuredCalls = map[string][]*AssuredCall{
-		"test/assured":   []*AssuredCall{call1, call2},
-		"teapot/assured": []*AssuredCall{call3},
+	fullAssuredCalls = map[string][]*assured.Call{
+		"GET:/test/assured":   []*assured.Call{call1, call2},
+		":/teapot/assured": []*assured.Call{call3},
 	}
 )

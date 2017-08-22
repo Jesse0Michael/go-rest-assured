@@ -3,6 +3,7 @@ package bindings
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -10,6 +11,7 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/jesse0michael/go-rest-assured/assured"
 	"github.com/jesse0michael/go-rest-assured/endpoints"
 )
 
@@ -42,7 +44,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 	router.Handle(
 		"/given/{path:.*}",
 		kithttp.NewServer(
-			e.GivenEndpoint,
+			e.WrappedEndpoint(e.GivenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
 			kithttp.ServerErrorLogger(logger),
@@ -53,7 +55,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 	router.Handle(
 		"/when/{path:.*}",
 		kithttp.NewServer(
-			e.WhenEndpoint,
+			e.WrappedEndpoint(e.WhenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
 			kithttp.ServerErrorLogger(logger),
@@ -64,9 +66,9 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 	router.Handle(
 		"/then/{path:.*}",
 		kithttp.NewServer(
-			e.ThenEndpoint,
+			e.WrappedEndpoint(e.ThenEndpoint),
 			decodeAssuredCall,
-			encodeAssuredCall,
+			encodeJSONResponse,
 			kithttp.ServerErrorLogger(logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*")),
 			kithttp.ServerErrorEncoder(errorEncoder)),
@@ -75,7 +77,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 	router.Handle(
 		"/clear/{path:.*}",
 		kithttp.NewServer(
-			e.ClearEndpoint,
+			e.WrappedEndpoint(e.ClearEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
 			kithttp.ServerErrorLogger(logger),
@@ -97,11 +99,11 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 	return router
 }
 
+// decodeAssuredCall converts an http request into an assured Call object
 func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, error) {
-	urlParams := mux.Vars(req)
-
-	ac := endpoints.AssuredCall{
-		Path:       urlParams["path"],
+	ac := assured.Call{
+		Path:       req.URL.Path,
+		Method:     req.Method,
 		StatusCode: http.StatusOK,
 	}
 	if statusCode, err := strconv.ParseInt(req.Header.Get("Assured-Status"), 10, 64); err == nil {
@@ -110,21 +112,27 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 
 	if req.Body != nil {
 		defer req.Body.Close()
-		json.NewDecoder(req.Body).Decode(ac.Response)
+		if bytes, err := ioutil.ReadAll(req.Body); err == nil {
+			ac.Response = bytes
+		}
 	}
 
 	return &ac, nil
 }
 
+// encodeAssuredCall writes the assured Call to the http response as it is intended to be stubbed
 func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}) error {
-	if call, ok := i.(*endpoints.AssuredCall); ok {
+	if call, ok := i.(*assured.Call); ok {
 		w.WriteHeader(call.StatusCode)
-		if call.Response != nil {
-			w.Header().Set("Content-Type", "application/json") // Content-Type needs to be set before WriteHeader https://golang.org/pkg/net/http/#ResponseWriter
-			return json.NewEncoder(w).Encode(call.Response)
-		}
+		w.Write([]byte(call.String()))
 	}
 	return nil
+}
+
+// encodeJSONResponse writes to the http response as JSON
+func encodeJSONResponse(ctx context.Context, w http.ResponseWriter, i interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(i)
 }
 
 func errorEncoder(ctx context.Context, err error, w http.ResponseWriter) {
