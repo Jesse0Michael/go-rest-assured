@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	kitlog "github.com/go-kit/kit/log"
+	"github.com/gorilla/mux"
 	"github.com/jesse0michael/go-rest-assured/assured"
 	"github.com/stretchr/testify/require"
 )
@@ -60,12 +61,14 @@ func TestApplicationRouterThenBinding(t *testing.T) {
 func TestApplicationRouterClearBinding(t *testing.T) {
 	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
 
-	req, err := http.NewRequest(http.MethodDelete, "/clear/rest/assured", nil)
-	require.NoError(t, err)
-	resp := httptest.NewRecorder()
-	router.ServeHTTP(resp, req)
-	require.Equal(t, http.StatusOK, resp.Code)
-	require.Equal(t, "*", resp.Header().Get("Access-Control-Allow-Origin"))
+	for _, verb := range verbs {
+		req, err := http.NewRequest(verb, "/clear/rest/assured", nil)
+		require.NoError(t, err)
+		resp := httptest.NewRecorder()
+		router.ServeHTTP(resp, req)
+		require.Equal(t, http.StatusOK, resp.Code)
+		require.Equal(t, "*", resp.Header().Get("Access-Control-Allow-Origin"))
+	}
 }
 
 func TestApplicationRouterClearAllBinding(t *testing.T) {
@@ -90,71 +93,115 @@ func TestApplicationRouterFailure(t *testing.T) {
 }
 
 func TestDecodeAssuredCall(t *testing.T) {
-	req, err := http.NewRequest(http.MethodPost, "/then/test/assured?test=positive", bytes.NewBuffer([]byte(`{"assured": true}`)))
-	require.NoError(t, err)
+	decoded := false
 	expected := &assured.Call{
-		Path:       "/then/test/assured",
+		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodPost,
 		Response:   []byte(`{"assured": true}`),
 	}
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCall(ctx, req)
 
-	c, err := decodeAssuredCall(ctx, req)
+		require.NoError(t, err)
+		require.Equal(t, expected, c)
+		decoded = true
+	}
 
+	req, err := http.NewRequest(http.MethodPost, "/then/test/assured?test=positive", bytes.NewBuffer([]byte(`{"assured": true}`)))
 	require.NoError(t, err)
-	require.Equal(t, expected, c)
+
+	router := mux.NewRouter()
+	router.HandleFunc("/then/{path:.*}", testDecode).Methods(http.MethodPost)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
 }
 
 func TestDecodeAssuredCallNilBody(t *testing.T) {
-	req, err := http.NewRequest(http.MethodDelete, "/when/test/assured", nil)
-	require.NoError(t, err)
+	decoded := false
 	expected := &assured.Call{
-		Path:       "/when/test/assured",
+		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodDelete,
 	}
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCall(ctx, req)
 
-	c, err := decodeAssuredCall(ctx, req)
+		require.NoError(t, err)
+		require.Equal(t, expected, c)
+		decoded = true
+	}
 
+	req, err := http.NewRequest(http.MethodDelete, "/when/test/assured", nil)
 	require.NoError(t, err)
-	require.Equal(t, expected, c)
+
+	router := mux.NewRouter()
+	router.HandleFunc("/when/{path:.*}", testDecode).Methods(http.MethodDelete)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
 }
 
 func TestDecodeAssuredCallStatus(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, "/given/test/assured", nil)
-	require.NoError(t, err)
-	req.Header.Set("Assured-Status", "403")
+	decoded := false
 	expected := &assured.Call{
-		Path:       "/given/test/assured",
+		Path:       "test/assured",
 		StatusCode: http.StatusForbidden,
 		Method:     http.MethodGet,
 	}
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCall(ctx, req)
 
-	c, err := decodeAssuredCall(ctx, req)
+		require.NoError(t, err)
+		require.Equal(t, expected, c)
+		decoded = true
+	}
 
+	req, err := http.NewRequest(http.MethodGet, "/given/test/assured", nil)
 	require.NoError(t, err)
-	require.Equal(t, expected, c)
+	req.Header.Set("Assured-Status", "403")
+
+	router := mux.NewRouter()
+	router.HandleFunc("/given/{path:.*}", testDecode).Methods(http.MethodGet)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
 }
 
 func TestDecodeAssuredCallStatusFailure(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, "/given/test/assured", nil)
-	require.NoError(t, err)
-	req.Header.Set("Assured-Status", "four oh three")
+	decoded := false
 	expected := &assured.Call{
-		Path:       "/given/test/assured",
+		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodGet,
 	}
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCall(ctx, req)
 
-	c, err := decodeAssuredCall(ctx, req)
+		require.NoError(t, err)
+		require.Equal(t, expected, c)
+		decoded = true
+	}
 
+	req, err := http.NewRequest(http.MethodGet, "/given/test/assured", nil)
 	require.NoError(t, err)
-	require.Equal(t, expected, c)
+	req.Header.Set("Assured-Status", "four oh three")
+
+	router := mux.NewRouter()
+	router.HandleFunc("/given/{path:.*}", testDecode).Methods(http.MethodGet)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
 }
 
 func TestEncodeAssuredCall(t *testing.T) {
 	call := &assured.Call{
-		Path:       "/then/test/assured",
+		Path:       "/test/assured",
 		StatusCode: http.StatusCreated,
 		Method:     http.MethodPost,
 		Response:   []byte(`{"assured": true}`),
@@ -179,10 +226,5 @@ var (
 		http.MethodDelete,
 		http.MethodConnect,
 		http.MethodOptions,
-	}
-	paths = []string{
-		"/given/test/assured",
-		"/when/test/assured",
-		"/then/test/assured",
 	}
 )

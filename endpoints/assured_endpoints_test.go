@@ -77,8 +77,8 @@ func TestWhenEndpointSuccess(t *testing.T) {
 		madeCalls:    map[string][]*assured.Call{},
 	}
 	expected := map[string][]*assured.Call{
-		"GET:/test/assured":   []*assured.Call{call2, call1},
-		":/teapot/assured": []*assured.Call{call3},
+		"GET:test/assured":   []*assured.Call{call2, call1},
+		":teapot/assured": []*assured.Call{call3},
 	}
 
 	c, err := endpoints.WhenEndpoint(ctx, call1)
@@ -134,7 +134,7 @@ func TestClearEndpointSuccess(t *testing.T) {
 		madeCalls:    fullAssuredCalls,
 	}
 	expected := map[string][]*assured.Call{
-		":/teapot/assured": []*assured.Call{call3},
+		":teapot/assured": []*assured.Call{call3},
 	}
 
 	c, err := endpoints.ClearEndpoint(ctx, call1)
@@ -177,23 +177,23 @@ func TestClearAllEndpointSuccess(t *testing.T) {
 var (
 	ctx   = context.Background()
 	call1 = &assured.Call{
-		Path:       "/test/assured",
+		Path:       "test/assured",
 		Method:     "GET",
 		StatusCode: http.StatusOK,
 		Response:   []byte(`{"assured": true}`),
 	}
 	call2 = &assured.Call{
-		Path:       "/test/assured",
+		Path:       "test/assured",
 		Method:     "GET",
 		StatusCode: http.StatusConflict,
 		Response:   []byte("error"),
 	}
 	call3 = &assured.Call{
-		Path:       "/teapot/assured",
+		Path:       "teapot/assured",
 		StatusCode: http.StatusTeapot,
 	}
 	fullAssuredCalls = map[string][]*assured.Call{
-		"GET:/test/assured":   []*assured.Call{call1, call2},
-		":/teapot/assured": []*assured.Call{call3},
+		"GET:test/assured":   []*assured.Call{call1, call2},
+		":teapot/assured": []*assured.Call{call3},
 	}
 )

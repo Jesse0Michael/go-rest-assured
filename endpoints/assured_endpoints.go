@@ -3,7 +3,6 @@ package endpoints
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/go-kit/kit/endpoint"
 	kitlog "github.com/go-kit/kit/log"
@@ -39,13 +38,8 @@ func (a *AssuredEndpoints) WrappedEndpoint(handler func(context.Context, *assure
 
 // GivenEndpoint is used to stub out a call for a given path
 func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *assured.Call) (interface{}, error) {
-	if a.assuredCalls[call.ID()] == nil {
-		a.assuredCalls[call.ID()] = []*assured.Call{call}
-	} else {
-		a.assuredCalls[call.ID()] = append(a.assuredCalls[call.ID()], call)
-	}
+	a.assuredCalls[call.ID()] = append(a.assuredCalls[call.ID()], call)
 	a.logger.Log("message", "assured call set", "path", call.ID())
-
 	return call, nil
 }
 

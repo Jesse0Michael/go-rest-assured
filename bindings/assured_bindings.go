@@ -83,7 +83,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 			kithttp.ServerErrorLogger(logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*")),
 			kithttp.ServerErrorEncoder(errorEncoder)),
-	).Methods(http.MethodDelete)
+	).Methods(assuredMethods...)
 
 	router.Handle(
 		"/clear",
@@ -101,8 +101,9 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 
 // decodeAssuredCall converts an http request into an assured Call object
 func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, error) {
+	urlParams := mux.Vars(req)
 	ac := assured.Call{
-		Path:       req.URL.Path,
+		Path:       urlParams["path"],
 		Method:     req.Method,
 		StatusCode: http.StatusOK,
 	}
