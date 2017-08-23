@@ -34,7 +34,7 @@ The HTTP Method you use will be stored in the Assured Call
 
 The Request Body, if present, will be stored in the Assured Call
 
-The stored Status Code will be `200 OK` unless you specify a `"Assured-Status": "[0-9]+"`
+The stored Status Code will be `200 OK` unless you specify a `"Assured-Status": "[0-9]+"` HTTP Header
 
 Or..
 
@@ -86,10 +86,10 @@ To clear out all stubbed calls on the server, use the endpoint `/clear`
 Or..
 
 ``` go
-// Clear calls for a Method and Path
+// Clears calls for a Method and Path
 client.Clear("GET", "test/assured")
 
-// Crear all calls
+// Crears all calls
 client.ClearAll()
 ```
 

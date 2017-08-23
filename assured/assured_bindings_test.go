@@ -1,4 +1,4 @@
-package bindings
+package assured
 
 import (
 	"bytes"
@@ -10,7 +10,6 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
-	"github.com/jesse0michael/go-rest-assured/assured"
 	"github.com/stretchr/testify/require"
 )
 
@@ -94,7 +93,7 @@ func TestApplicationRouterFailure(t *testing.T) {
 
 func TestDecodeAssuredCall(t *testing.T) {
 	decoded := false
-	expected := &assured.Call{
+	expected := &Call{
 		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodPost,
@@ -121,7 +120,7 @@ func TestDecodeAssuredCall(t *testing.T) {
 
 func TestDecodeAssuredCallNilBody(t *testing.T) {
 	decoded := false
-	expected := &assured.Call{
+	expected := &Call{
 		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodDelete,
@@ -147,7 +146,7 @@ func TestDecodeAssuredCallNilBody(t *testing.T) {
 
 func TestDecodeAssuredCallStatus(t *testing.T) {
 	decoded := false
-	expected := &assured.Call{
+	expected := &Call{
 		Path:       "test/assured",
 		StatusCode: http.StatusForbidden,
 		Method:     http.MethodGet,
@@ -174,7 +173,7 @@ func TestDecodeAssuredCallStatus(t *testing.T) {
 
 func TestDecodeAssuredCallStatusFailure(t *testing.T) {
 	decoded := false
-	expected := &assured.Call{
+	expected := &Call{
 		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodGet,
@@ -200,7 +199,7 @@ func TestDecodeAssuredCallStatusFailure(t *testing.T) {
 }
 
 func TestEncodeAssuredCall(t *testing.T) {
-	call := &assured.Call{
+	call := &Call{
 		Path:       "/test/assured",
 		StatusCode: http.StatusCreated,
 		Method:     http.MethodPost,

@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	kitlog "github.com/go-kit/kit/log"
-	"github.com/jesse0michael/go-rest-assured/bindings"
+	"github.com/jesse0michael/go-rest-assured/assured"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 		errc <- interrupt()
 	}()
 
-	bindings.StartApplicationHTTPListener(logger, rootCtx, errc)
+	assured.StartApplicationHTTPListener(logger, rootCtx, errc)
 
 	logger.Log("fatal", <-errc)
 }

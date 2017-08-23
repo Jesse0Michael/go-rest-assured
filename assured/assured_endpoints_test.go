@@ -1,4 +1,4 @@
-package endpoints
+package assured
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	kitlog "github.com/go-kit/kit/log"
-	"github.com/jesse0michael/go-rest-assured/assured"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,8 +14,8 @@ func TestNewAssuredEndpoints(t *testing.T) {
 	logger := kitlog.NewLogfmtLogger(ioutil.Discard)
 	expected := &AssuredEndpoints{
 		logger:       logger,
-		assuredCalls: map[string][]*assured.Call{},
-		madeCalls:    map[string][]*assured.Call{},
+		assuredCalls: map[string][]*Call{},
+		madeCalls:    map[string][]*Call{},
 	}
 	actual := NewAssuredEndpoints(logger)
 
@@ -25,7 +24,7 @@ func TestNewAssuredEndpoints(t *testing.T) {
 
 func TestWrappedEndpointSuccess(t *testing.T) {
 	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
-	testEndpoint := func(ctx context.Context, call *assured.Call) (interface{}, error) {
+	testEndpoint := func(ctx context.Context, call *Call) (interface{}, error) {
 		return call, nil
 	}
 
@@ -38,7 +37,7 @@ func TestWrappedEndpointSuccess(t *testing.T) {
 
 func TestWrappedEndpointFailure(t *testing.T) {
 	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
-	testEndpoint := func(ctx context.Context, call *assured.Call) (interface{}, error) {
+	testEndpoint := func(ctx context.Context, call *Call) (interface{}, error) {
 		return call, nil
 	}
 
@@ -74,11 +73,11 @@ func TestGivenEndpointSuccess(t *testing.T) {
 func TestWhenEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
 		assuredCalls: fullAssuredCalls,
-		madeCalls:    map[string][]*assured.Call{},
+		madeCalls:    map[string][]*Call{},
 	}
-	expected := map[string][]*assured.Call{
-		"GET:test/assured":   []*assured.Call{call2, call1},
-		":teapot/assured": []*assured.Call{call3},
+	expected := map[string][]*Call{
+		"GET:test/assured": []*Call{call2, call1},
+		":teapot/assured":  []*Call{call3},
 	}
 
 	c, err := endpoints.WhenEndpoint(ctx, call1)
@@ -119,12 +118,12 @@ func TestThenEndpointSuccess(t *testing.T) {
 	c, err := endpoints.ThenEndpoint(ctx, call1)
 
 	require.NoError(t, err)
-	require.Equal(t, []*assured.Call{call1, call2}, c)
+	require.Equal(t, []*Call{call1, call2}, c)
 
 	c, err = endpoints.ThenEndpoint(ctx, call3)
 
 	require.NoError(t, err)
-	require.Equal(t, []*assured.Call{call3}, c)
+	require.Equal(t, []*Call{call3}, c)
 }
 
 func TestClearEndpointSuccess(t *testing.T) {
@@ -133,8 +132,8 @@ func TestClearEndpointSuccess(t *testing.T) {
 		assuredCalls: fullAssuredCalls,
 		madeCalls:    fullAssuredCalls,
 	}
-	expected := map[string][]*assured.Call{
-		":teapot/assured": []*assured.Call{call3},
+	expected := map[string][]*Call{
+		":teapot/assured": []*Call{call3},
 	}
 
 	c, err := endpoints.ClearEndpoint(ctx, call1)
@@ -155,8 +154,8 @@ func TestClearEndpointSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, map[string][]*assured.Call{}, endpoints.assuredCalls)
-	require.Equal(t, map[string][]*assured.Call{}, endpoints.madeCalls)
+	require.Equal(t, map[string][]*Call{}, endpoints.assuredCalls)
+	require.Equal(t, map[string][]*Call{}, endpoints.madeCalls)
 }
 
 func TestClearAllEndpointSuccess(t *testing.T) {
@@ -170,30 +169,29 @@ func TestClearAllEndpointSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, map[string][]*assured.Call{}, endpoints.assuredCalls)
-	require.Equal(t, map[string][]*assured.Call{}, endpoints.madeCalls)
+	require.Equal(t, map[string][]*Call{}, endpoints.assuredCalls)
+	require.Equal(t, map[string][]*Call{}, endpoints.madeCalls)
 }
 
 var (
-	ctx   = context.Background()
-	call1 = &assured.Call{
+	call1 = &Call{
 		Path:       "test/assured",
 		Method:     "GET",
 		StatusCode: http.StatusOK,
 		Response:   []byte(`{"assured": true}`),
 	}
-	call2 = &assured.Call{
+	call2 = &Call{
 		Path:       "test/assured",
 		Method:     "GET",
 		StatusCode: http.StatusConflict,
 		Response:   []byte("error"),
 	}
-	call3 = &assured.Call{
+	call3 = &Call{
 		Path:       "teapot/assured",
 		StatusCode: http.StatusTeapot,
 	}
-	fullAssuredCalls = map[string][]*assured.Call{
-		"GET:test/assured":   []*assured.Call{call1, call2},
-		":teapot/assured": []*assured.Call{call3},
+	fullAssuredCalls = map[string][]*Call{
+		"GET:test/assured": []*Call{call1, call2},
+		":teapot/assured":  []*Call{call3},
 	}
 )

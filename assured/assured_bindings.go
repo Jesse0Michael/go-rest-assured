@@ -1,4 +1,4 @@
-package bindings
+package assured
 
 import (
 	"context"
@@ -11,8 +11,6 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/jesse0michael/go-rest-assured/assured"
-	"github.com/jesse0michael/go-rest-assured/endpoints"
 )
 
 // StartApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
@@ -29,7 +27,7 @@ func StartApplicationHTTPListener(logger kitlog.Logger, root context.Context, er
 // createApplicationRouter sets up the router that will handle all of the application routes
 func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Router {
 	router := mux.NewRouter()
-	e := endpoints.NewAssuredEndpoints(logger)
+	e := NewAssuredEndpoints(logger)
 	assuredMethods := []string{
 		http.MethodGet,
 		http.MethodHead,
@@ -102,7 +100,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 // decodeAssuredCall converts an http request into an assured Call object
 func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, error) {
 	urlParams := mux.Vars(req)
-	ac := assured.Call{
+	ac := Call{
 		Path:       urlParams["path"],
 		Method:     req.Method,
 		StatusCode: http.StatusOK,
@@ -123,7 +121,7 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 
 // encodeAssuredCall writes the assured Call to the http response as it is intended to be stubbed
 func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}) error {
-	if call, ok := i.(*assured.Call); ok {
+	if call, ok := i.(*Call); ok {
 		w.WriteHeader(call.StatusCode)
 		w.Write([]byte(call.String()))
 	}
