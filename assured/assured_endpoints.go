@@ -58,8 +58,8 @@ func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interf
 	return assured, nil
 }
 
-// ThenEndpoint is used to verify a particular call
-func (a *AssuredEndpoints) ThenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
+// VerifyEndpoint is used to verify a particular call
+func (a *AssuredEndpoints) VerifyEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	return a.madeCalls[call.ID()], nil
 }
 

@@ -110,17 +110,17 @@ func TestWhenEndpointNotFound(t *testing.T) {
 	require.Equal(t, "No assured calls", err.Error())
 }
 
-func TestThenEndpointSuccess(t *testing.T) {
+func TestVerifyEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
 		madeCalls: fullAssuredCalls,
 	}
 
-	c, err := endpoints.ThenEndpoint(ctx, call1)
+	c, err := endpoints.VerifyEndpoint(ctx, call1)
 
 	require.NoError(t, err)
 	require.Equal(t, []*Call{call1, call2}, c)
 
-	c, err = endpoints.ThenEndpoint(ctx, call3)
+	c, err = endpoints.VerifyEndpoint(ctx, call3)
 
 	require.NoError(t, err)
 	require.Equal(t, []*Call{call3}, c)

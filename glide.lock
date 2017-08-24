@@ -1,5 +1,5 @@
-hash: b8d28b462db121c1427751ec35a0bb47eb50703d922892a6c2d8497e68ecc047
-updated: 2017-08-23T09:29:41.973922387-07:00
+hash: ecfa2d2574c5121c8a1148111bfd67ecf5a28ff395450c2e6c390f2394a21235
+updated: 2017-08-23T20:53:22.895944611-07:00
 imports:
 - name: github.com/go-kit/kit
   version: f01651a61ac759c6b508539bddda24f63ea34bbb
@@ -19,6 +19,8 @@ imports:
   version: ac112f7d75a0714af1bd86ab17749b31f7809640
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
+- name: github.com/phayes/freeport
+  version: e7681b37614941bf73b404e0caa37f19e33b5fed
 - name: github.com/stretchr/testify
   version: 890a5c3458b43e6104ff5da8dfa139d013d77544
   subpackages:

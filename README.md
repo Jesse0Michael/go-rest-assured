@@ -66,7 +66,7 @@ As requests come in, the will be stored
 
 
 ## Verifying
-To verify the calls made against your go-rest-assured service, use the endpoint `/then/{path:.*}`
+To verify the calls made against your go-rest-assured service, use the endpoint `/verify/{path:.*}`
 
 This endpoint returns a list of assured calls made against the matching Method/Path
 

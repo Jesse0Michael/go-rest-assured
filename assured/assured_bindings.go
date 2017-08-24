@@ -3,6 +3,7 @@ package assured
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -14,13 +15,13 @@ import (
 )
 
 // StartApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
-func StartApplicationHTTPListener(logger kitlog.Logger, root context.Context, errc chan error) {
+func StartApplicationHTTPListener(port int, logger kitlog.Logger, root context.Context, errc chan error) {
 	go func() {
 		ctx, cancel := context.WithCancel(root)
 		defer cancel()
 		router := createApplicationRouter(ctx, logger)
-		logger.Log("message", "starting go rest assured on port 11011")
-		errc <- http.ListenAndServe(":11011", handlers.RecoveryHandler()(router))
+		logger.Log("message", fmt.Sprintf("starting go rest assured on port %d", port))
+		errc <- http.ListenAndServe(fmt.Sprintf(":%d", port), handlers.RecoveryHandler()(router))
 	}()
 }
 
@@ -62,9 +63,9 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 	).Methods(assuredMethods...)
 
 	router.Handle(
-		"/then/{path:.*}",
+		"/verify/{path:.*}",
 		kithttp.NewServer(
-			e.WrappedEndpoint(e.ThenEndpoint),
+			e.WrappedEndpoint(e.VerifyEndpoint),
 			decodeAssuredCall,
 			encodeJSONResponse,
 			kithttp.ServerErrorLogger(logger),

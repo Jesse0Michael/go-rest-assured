@@ -44,11 +44,11 @@ func TestApplicationRouterWhenBinding(t *testing.T) {
 	}
 }
 
-func TestApplicationRouterThenBinding(t *testing.T) {
+func TestApplicationRouterVerifyBinding(t *testing.T) {
 	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
 
 	for _, verb := range verbs {
-		req, err := http.NewRequest(verb, "/then/rest/assured", nil)
+		req, err := http.NewRequest(verb, "/verify/rest/assured", nil)
 		require.NoError(t, err)
 		resp := httptest.NewRecorder()
 		router.ServeHTTP(resp, req)
@@ -107,11 +107,11 @@ func TestDecodeAssuredCall(t *testing.T) {
 		decoded = true
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "/then/test/assured?test=positive", bytes.NewBuffer([]byte(`{"assured": true}`)))
+	req, err := http.NewRequest(http.MethodPost, "/verify/test/assured?test=positive", bytes.NewBuffer([]byte(`{"assured": true}`)))
 	require.NoError(t, err)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/then/{path:.*}", testDecode).Methods(http.MethodPost)
+	router.HandleFunc("/verify/{path:.*}", testDecode).Methods(http.MethodPost)
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
