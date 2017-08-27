@@ -41,9 +41,15 @@ func (c *Client) Port() int {
 	return port
 }
 
+// URL returns the url to use to test you stubbed endpoints
+func (c *Client) URL() string {
+	return fmt.Sprintf("http://localhost:%d/when/", c.Port())
+}
+
 // Run starts the go-rest-assured service through the client
-func (c *Client) Run() {
+func (c *Client) Run() Client {
 	StartApplicationHTTPListener(c.Port(), c.logger, c.ctx, c.errc)
+	return *c
 }
 
 // Close is used to close the running service
@@ -56,16 +62,24 @@ func (c *Client) Given(call *Call) error {
 	var req *http.Request
 	var err error
 
+	if call.Method == "" {
+		return fmt.Errorf("cannot stub call without Method")
+	}
+
+	if call.Path == "" {
+		return fmt.Errorf("cannot stub call without Path")
+	}
+
 	if call.Response == nil {
-		req, err = http.NewRequest(call.Method, fmt.Sprintf("given/%s", call.Path), nil)
+		req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port(), call.Path), nil)
 	} else {
-		req, err = http.NewRequest(call.Method, fmt.Sprintf("given/%s", call.Path), bytes.NewReader(call.Response))
+		req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port(), call.Path), bytes.NewReader(call.Response))
 	}
 	if err != nil {
 		return err
 	}
 	if call.StatusCode != 0 {
-		req.Header.Set("Assert-Status", string(call.StatusCode))
+		req.Header.Set("Assured-Status", fmt.Sprintf("%d", call.StatusCode))
 	}
 
 	_, err = c.httpClient.Do(req)
@@ -74,7 +88,7 @@ func (c *Client) Given(call *Call) error {
 
 // Verify returns all of the calls made against a stubbed method and path
 func (c *Client) Verify(method, path string) ([]*Call, error) {
-	req, err := http.NewRequest(method, fmt.Sprintf("verify/%s", path), nil)
+	req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/verify/%s", c.Port(), path), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +111,7 @@ func (c *Client) Verify(method, path string) ([]*Call, error) {
 
 // Clear assured calls for a Method and Path
 func (c *Client) Clear(method, path string) error {
-	req, err := http.NewRequest(method, fmt.Sprintf("clear/%s", path), nil)
+	req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/clear/%s", c.Port(), path), nil)
 	if err != nil {
 		return err
 	}
@@ -107,7 +121,7 @@ func (c *Client) Clear(method, path string) error {
 
 // ClearAll clears all assured calls
 func (c *Client) ClearAll() error {
-	req, err := http.NewRequest(http.MethodDelete, "clear", nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("http://localhost:%d/clear", c.Port()), nil)
 	if err != nil {
 		return err
 	}
