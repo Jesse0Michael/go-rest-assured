@@ -103,7 +103,7 @@ func (c *Client) Verify(method, path string) ([]*Call, error) {
 	defer resp.Body.Close()
 
 	var calls []*Call
-	if err = json.NewDecoder(resp.Body).Decode(calls); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&calls); err != nil {
 		return nil, err
 	}
 	return calls, nil

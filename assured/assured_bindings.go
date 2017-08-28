@@ -67,7 +67,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 		kithttp.NewServer(
 			e.WrappedEndpoint(e.VerifyEndpoint),
 			decodeAssuredCall,
-			encodeJSONResponse,
+			encodeAssuredCall,
 			kithttp.ServerErrorLogger(logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*")),
 			kithttp.ServerErrorEncoder(errorEncoder)),
@@ -122,17 +122,15 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 
 // encodeAssuredCall writes the assured Call to the http response as it is intended to be stubbed
 func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}) error {
-	if call, ok := i.(*Call); ok {
-		w.WriteHeader(call.StatusCode)
-		w.Write([]byte(call.String()))
+	switch resp := i.(type) {
+	case *Call:
+		w.WriteHeader(resp.StatusCode)
+		w.Write([]byte(resp.String()))
+	case []*Call:
+		w.Header().Set("Content-Type", "application/json")
+		return json.NewEncoder(w).Encode(resp)
 	}
 	return nil
-}
-
-// encodeJSONResponse writes to the http response as JSON
-func encodeJSONResponse(ctx context.Context, w http.ResponseWriter, i interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(i)
 }
 
 func errorEncoder(ctx context.Context, err error, w http.ResponseWriter) {

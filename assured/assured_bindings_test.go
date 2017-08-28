@@ -214,6 +214,16 @@ func TestEncodeAssuredCall(t *testing.T) {
 	require.Equal(t, `{"assured": true}`, resp.Body.String())
 }
 
+func TestEncodeAssuredCalls(t *testing.T) {
+	resp := httptest.NewRecorder()
+
+	err := encodeAssuredCall(ctx, resp, []*Call{call1, call2})
+
+	require.NoError(t, err)
+	require.Equal(t, "application/json", resp.HeaderMap.Get("Content-Type"))
+	require.Equal(t, `[{"Path":"test/assured","Method":"GET","StatusCode":200,"Response":"eyJhc3N1cmVkIjogdHJ1ZX0="},{"Path":"test/assured","Method":"GET","StatusCode":409,"Response":"ZXJyb3I="}]`+"\n", resp.Body.String())
+}
+
 var (
 	ctx   = context.Background()
 	verbs = []string{

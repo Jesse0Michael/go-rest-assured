@@ -76,8 +76,8 @@ func TestWhenEndpointSuccess(t *testing.T) {
 		madeCalls:    map[string][]*Call{},
 	}
 	expected := map[string][]*Call{
-		"GET:test/assured": {call2, call1},
-		":teapot/assured":  {call3},
+		"GET:test/assured":    {call2, call1},
+		"POST:teapot/assured": {call3},
 	}
 
 	c, err := endpoints.WhenEndpoint(ctx, call1)
@@ -133,7 +133,7 @@ func TestClearEndpointSuccess(t *testing.T) {
 		madeCalls:    fullAssuredCalls,
 	}
 	expected := map[string][]*Call{
-		":teapot/assured": {call3},
+		"POST:teapot/assured": {call3},
 	}
 
 	c, err := endpoints.ClearEndpoint(ctx, call1)
@@ -188,10 +188,11 @@ var (
 	}
 	call3 = &Call{
 		Path:       "teapot/assured",
+		Method:     "POST",
 		StatusCode: http.StatusTeapot,
 	}
 	fullAssuredCalls = map[string][]*Call{
-		"GET:test/assured": {call1, call2},
-		":teapot/assured":  {call3},
+		"GET:test/assured":    {call1, call2},
+		"POST:teapot/assured": {call3},
 	}
 )
