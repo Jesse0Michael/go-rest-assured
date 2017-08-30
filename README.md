@@ -21,8 +21,7 @@ Go-Rest-Assured keeps track of the Assured Calls you have stubbed out and the Ca
 import ("github.com/jesse0michael/go-rest-assured/assured")
 
 // Create and run a new Assured Client
-client := assured.NewClient()
-client.Run()
+client := assured.NewDefaultClient()
 defer client.Close()
 ```
 

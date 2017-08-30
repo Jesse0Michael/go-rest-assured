@@ -20,14 +20,16 @@ func StartApplicationHTTPListener(root context.Context, logger kitlog.Logger, po
 	go func() {
 		ctx, cancel := context.WithCancel(root)
 		defer cancel()
-		// go func() {
-		// 	<- ctx.Done()
-		// 	//listen.Cancel
-		// }
+
 		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 		if err != nil {
 			panic(err)
 		}
+
+		go func() {
+			<-ctx.Done()
+			listen.Close()
+		}()
 
 		router := createApplicationRouter(ctx, logger)
 		logger.Log("message", fmt.Sprintf("starting go rest assured on port %d", port))

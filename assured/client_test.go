@@ -92,6 +92,26 @@ func TestClient(t *testing.T) {
 	require.Nil(t, calls)
 }
 
+func TestClientClose(t *testing.T) {
+	client := NewDefaultClient()
+	client2 := NewDefaultClient()
+
+	require.NoError(t, client.Given(call1))
+	require.NoError(t, client2.Given(call1))
+
+	client.Close()
+	err := client.Given(call1)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), `connection refused`)
+
+	client2.Close()
+	err = client2.Given(call1)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), `connection refused`)
+}
+
 func TestClientGivenMethodFailure(t *testing.T) {
 	client := NewDefaultClient()
 
