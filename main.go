@@ -22,7 +22,7 @@ func main() {
 	}()
 
 	port := freeport.GetPort()
-	assured.StartApplicationHTTPListener(port, logger, rootCtx, errc)
+	assured.StartApplicationHTTPListener(rootCtx, logger, port, errc)
 
 	logger.Log("fatal", <-errc)
 }

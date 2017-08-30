@@ -2,6 +2,7 @@ package assured
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -11,12 +12,17 @@ import (
 	"testing"
 
 	kitlog "github.com/go-kit/kit/log"
+	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient(t *testing.T) {
 	httpClient := &http.Client{}
-	client := NewClient(kitlog.NewLogfmtLogger(ioutil.Discard), nil).Run()
+	logger := kitlog.NewLogfmtLogger(ioutil.Discard)
+	port := freeport.GetPort()
+	ctx := context.Background()
+	client := NewClient(ctx, &port, &logger)
+
 	url := client.URL()
 
 	require.NoError(t, client.Given(call1))
@@ -87,7 +93,7 @@ func TestClient(t *testing.T) {
 }
 
 func TestClientGivenMethodFailure(t *testing.T) {
-	client := NewClient(kitlog.NewLogfmtLogger(ioutil.Discard), nil).Run()
+	client := NewDefaultClient()
 
 	err := client.Given(&Call{Path: "NoMethodMan"})
 
@@ -96,7 +102,7 @@ func TestClientGivenMethodFailure(t *testing.T) {
 }
 
 func TestClientGivenPathFailure(t *testing.T) {
-	client := NewClient(kitlog.NewLogfmtLogger(ioutil.Discard), nil).Run()
+	client := NewDefaultClient()
 
 	err := client.Given(&Call{Method: "GOT"})
 
@@ -105,7 +111,7 @@ func TestClientGivenPathFailure(t *testing.T) {
 }
 
 func TestClientBadRequestFailure(t *testing.T) {
-	client := NewClient(kitlog.NewLogfmtLogger(ioutil.Discard), nil).Run()
+	client := NewDefaultClient()
 
 	err := client.Given(&Call{Method: "\"", Path: "goat/path"})
 
@@ -128,8 +134,7 @@ func TestClientBadRequestFailure(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, `net/http: invalid method "\""`, err.Error())
 
-	p := -1
-	client.port = &p
+	client.Port = -1
 	err = client.ClearAll()
 
 	require.Error(t, err)
@@ -137,7 +142,8 @@ func TestClientBadRequestFailure(t *testing.T) {
 }
 
 func TestClientVerifyHttpClientFailure(t *testing.T) {
-	client := NewClient(kitlog.NewLogfmtLogger(ioutil.Discard), nil)
+	client := NewDefaultClient()
+	client.Port = 1
 
 	calls, err := client.Verify("GONE", "not/started")
 
@@ -147,7 +153,7 @@ func TestClientVerifyHttpClientFailure(t *testing.T) {
 }
 
 func TestClientVerifyResponseFailure(t *testing.T) {
-	client := NewClient(kitlog.NewLogfmtLogger(ioutil.Discard), nil)
+	client := NewDefaultClient()
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -155,8 +161,7 @@ func TestClientVerifyResponseFailure(t *testing.T) {
 	index := strings.LastIndex(testServer.URL, ":")
 	port, err := strconv.ParseInt(testServer.URL[index+1:], 10, 64)
 	require.NoError(t, err)
-	p := int(port)
-	client.port = &p
+	client.Port = int(port)
 
 	calls, err := client.Verify("GONE", "not/started")
 
@@ -166,7 +171,7 @@ func TestClientVerifyResponseFailure(t *testing.T) {
 }
 
 func TestClientVerifyBodyFailure(t *testing.T) {
-	client := NewClient(kitlog.NewLogfmtLogger(ioutil.Discard), nil)
+	client := NewDefaultClient()
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("ydob+dab")
@@ -175,8 +180,7 @@ func TestClientVerifyBodyFailure(t *testing.T) {
 	index := strings.LastIndex(testServer.URL, ":")
 	port, err := strconv.ParseInt(testServer.URL[index+1:], 10, 64)
 	require.NoError(t, err)
-	p := int(port)
-	client.port = &p
+	client.Port = int(port)
 
 	calls, err := client.Verify("BODY", "bad+body")
 
