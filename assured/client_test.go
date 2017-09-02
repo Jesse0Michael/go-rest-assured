@@ -25,9 +25,9 @@ func TestClient(t *testing.T) {
 
 	url := client.URL()
 
-	require.NoError(t, client.Given(call1))
-	require.NoError(t, client.Given(call2))
-	require.NoError(t, client.Given(call3))
+	require.NoError(t, client.Given(*call1))
+	require.NoError(t, client.Given(*call2))
+	require.NoError(t, client.Given(*call3))
 
 	req, err := http.NewRequest(http.MethodGet, url+"test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
 	require.NoError(t, err)
@@ -61,13 +61,13 @@ func TestClient(t *testing.T) {
 
 	calls, err := client.Verify("GET", "test/assured")
 	require.NoError(t, err)
-	require.Equal(t, []*Call{
-		&Call{Method: "GET", Path: "test/assured", StatusCode: 200, Response: []byte(`{"calling":"you"}`)},
-		&Call{Method: "GET", Path: "test/assured", StatusCode: 200, Response: []byte(`{"calling":"again"}`)}}, calls)
+	require.Equal(t, []Call{
+		Call{Method: "GET", Path: "test/assured", StatusCode: 200, Response: []byte(`{"calling":"you"}`)},
+		Call{Method: "GET", Path: "test/assured", StatusCode: 200, Response: []byte(`{"calling":"again"}`)}}, calls)
 
 	calls, err = client.Verify("POST", "teapot/assured")
 	require.NoError(t, err)
-	require.Equal(t, []*Call{&Call{Method: "POST", Path: "teapot/assured", StatusCode: 200, Response: []byte(`{"calling":"here"}`)}}, calls)
+	require.Equal(t, []Call{Call{Method: "POST", Path: "teapot/assured", StatusCode: 200, Response: []byte(`{"calling":"here"}`)}}, calls)
 
 	err = client.Clear("GET", "test/assured")
 	require.NoError(t, err)
@@ -78,7 +78,7 @@ func TestClient(t *testing.T) {
 
 	calls, err = client.Verify("POST", "teapot/assured")
 	require.NoError(t, err)
-	require.Equal(t, []*Call{&Call{Method: "POST", Path: "teapot/assured", StatusCode: 200, Response: []byte(`{"calling":"here"}`)}}, calls)
+	require.Equal(t, []Call{Call{Method: "POST", Path: "teapot/assured", StatusCode: 200, Response: []byte(`{"calling":"here"}`)}}, calls)
 
 	err = client.ClearAll()
 	require.NoError(t, err)
@@ -96,17 +96,17 @@ func TestClientClose(t *testing.T) {
 	client := NewDefaultClient()
 	client2 := NewDefaultClient()
 
-	require.NoError(t, client.Given(call1))
-	require.NoError(t, client2.Given(call1))
+	require.NoError(t, client.Given(*call1))
+	require.NoError(t, client2.Given(*call1))
 
 	client.Close()
-	err := client.Given(call1)
+	err := client.Given(*call1)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `connection refused`)
 
 	client2.Close()
-	err = client2.Given(call1)
+	err = client2.Given(*call1)
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `connection refused`)
@@ -115,7 +115,7 @@ func TestClientClose(t *testing.T) {
 func TestClientGivenMethodFailure(t *testing.T) {
 	client := NewDefaultClient()
 
-	err := client.Given(&Call{Path: "NoMethodMan"})
+	err := client.Given(Call{Path: "NoMethodMan"})
 
 	require.Error(t, err)
 	require.Equal(t, "cannot stub call without Method", err.Error())
@@ -124,7 +124,7 @@ func TestClientGivenMethodFailure(t *testing.T) {
 func TestClientGivenPathFailure(t *testing.T) {
 	client := NewDefaultClient()
 
-	err := client.Given(&Call{Method: "GOT"})
+	err := client.Given(Call{Method: "GOT"})
 
 	require.Error(t, err)
 	require.Equal(t, "cannot stub call without Path", err.Error())
@@ -133,12 +133,12 @@ func TestClientGivenPathFailure(t *testing.T) {
 func TestClientBadRequestFailure(t *testing.T) {
 	client := NewDefaultClient()
 
-	err := client.Given(&Call{Method: "\"", Path: "goat/path"})
+	err := client.Given(Call{Method: "\"", Path: "goat/path"})
 
 	require.Error(t, err)
 	require.Equal(t, `net/http: invalid method "\""`, err.Error())
 
-	err = client.Given(&Call{Method: "\"", Path: "goat/path", Response: []byte("goats among men")})
+	err = client.Given(Call{Method: "\"", Path: "goat/path", Response: []byte("goats among men")})
 
 	require.Error(t, err)
 	require.Equal(t, `net/http: invalid method "\""`, err.Error())
@@ -205,6 +205,6 @@ func TestClientVerifyBodyFailure(t *testing.T) {
 	calls, err := client.Verify("BODY", "bad+body")
 
 	require.Error(t, err)
-	require.Equal(t, `json: cannot unmarshal string into Go value of type []*assured.Call`, err.Error())
+	require.Equal(t, `json: cannot unmarshal string into Go value of type []assured.Call`, err.Error())
 	require.Nil(t, calls)
 }

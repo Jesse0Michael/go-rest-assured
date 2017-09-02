@@ -64,7 +64,7 @@ func (c *Client) Close() {
 }
 
 // Given stubs an assured Call
-func (c *Client) Given(call *Call) error {
+func (c *Client) Given(call Call) error {
 	var req *http.Request
 	var err error
 
@@ -93,7 +93,7 @@ func (c *Client) Given(call *Call) error {
 }
 
 // Verify returns all of the calls made against a stubbed method and path
-func (c *Client) Verify(method, path string) ([]*Call, error) {
+func (c *Client) Verify(method, path string) ([]Call, error) {
 	req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/verify/%s", c.Port, path), nil)
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (c *Client) Verify(method, path string) ([]*Call, error) {
 	}
 	defer resp.Body.Close()
 
-	var calls []*Call
+	var calls []Call
 	if err = json.NewDecoder(resp.Body).Decode(&calls); err != nil {
 		return nil, err
 	}
