@@ -3,7 +3,6 @@ package assured
 import (
 	"context"
 	"errors"
-	"sync"
 
 	"github.com/go-kit/kit/endpoint"
 	kitlog "github.com/go-kit/kit/log"
@@ -12,17 +11,16 @@ import (
 // AssuredEndpoints
 type AssuredEndpoints struct {
 	logger       kitlog.Logger
-	assuredCalls map[string][]*Call
-	madeCalls    map[string][]*Call
-	sync.Mutex
+	assuredCalls *CallStore
+	madeCalls    *CallStore
 }
 
 // NewAssuredEndpoints creates a new instance of assured endpoints
 func NewAssuredEndpoints(l kitlog.Logger) *AssuredEndpoints {
 	return &AssuredEndpoints{
 		logger:       l,
-		assuredCalls: map[string][]*Call{},
-		madeCalls:    map[string][]*Call{},
+		assuredCalls: NewCallStore(),
+		madeCalls:    NewCallStore(),
 	}
 }
 
@@ -39,9 +37,7 @@ func (a *AssuredEndpoints) WrappedEndpoint(handler func(context.Context, *Call) 
 
 // GivenEndpoint is used to stub out a call for a given path
 func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
-	a.Lock()
-	a.assuredCalls[call.ID()] = append(a.assuredCalls[call.ID()], call)
-	a.Unlock()
+	a.assuredCalls.Add(call)
 	a.logger.Log("message", "assured call set", "path", call.ID())
 
 	return call, nil
@@ -49,31 +45,28 @@ func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *Call) (inter
 
 // WhenEndpoint is used to test the assured calls
 func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
-	if a.assuredCalls[call.ID()] == nil || len(a.assuredCalls[call.ID()]) == 0 {
+	calls := a.assuredCalls.Get(call.ID())
+	if len(calls) == 0 {
 		a.logger.Log("message", "assured call not found", "path", call.ID())
 		return nil, errors.New("No assured calls")
 	}
 
-	a.Lock()
-	a.madeCalls[call.ID()] = append(a.madeCalls[call.ID()], call)
-	assured := a.assuredCalls[call.ID()][0]
-	a.assuredCalls[call.ID()] = append(a.assuredCalls[call.ID()][1:], assured)
-	a.Unlock()
+	a.madeCalls.Add(call)
+	assured := calls[0]
+	a.assuredCalls.Rotate(assured)
 
 	return assured, nil
 }
 
 // VerifyEndpoint is used to verify a particular call
 func (a *AssuredEndpoints) VerifyEndpoint(ctx context.Context, call *Call) (interface{}, error) {
-	return a.madeCalls[call.ID()], nil
+	return a.madeCalls.Get(call.ID()), nil
 }
 
 //ClearEndpoint is used to clear a specific assured call
 func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (interface{}, error) {
-	a.Lock()
-	delete(a.assuredCalls, call.ID())
-	delete(a.madeCalls, call.ID())
-	a.Unlock()
+	a.assuredCalls.Clear(call.ID())
+	a.madeCalls.Clear(call.ID())
 	a.logger.Log("message", "cleared calls for path", "path", call.ID())
 
 	return nil, nil
@@ -81,10 +74,8 @@ func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (inter
 
 //ClearAllEndpoint is used to clear all assured calls
 func (a *AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
-	a.Lock()
-	a.assuredCalls = map[string][]*Call{}
-	a.madeCalls = map[string][]*Call{}
-	a.Unlock()
+	a.assuredCalls.ClearAll()
+	a.madeCalls.ClearAll()
 	a.logger.Log("message", "cleared all calls")
 
 	return nil, nil

@@ -14,12 +14,13 @@ func TestNewAssuredEndpoints(t *testing.T) {
 	logger := kitlog.NewLogfmtLogger(ioutil.Discard)
 	expected := &AssuredEndpoints{
 		logger:       logger,
-		assuredCalls: map[string][]*Call{},
-		madeCalls:    map[string][]*Call{},
+		assuredCalls: NewCallStore(),
+		madeCalls:    NewCallStore(),
 	}
 	actual := NewAssuredEndpoints(logger)
 
-	require.Equal(t, expected, actual)
+	require.Equal(t, expected.assuredCalls, actual.assuredCalls)
+	require.Equal(t, expected.madeCalls, actual.madeCalls)
 }
 
 func TestWrappedEndpointSuccess(t *testing.T) {
@@ -73,7 +74,7 @@ func TestGivenEndpointSuccess(t *testing.T) {
 func TestWhenEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
 		assuredCalls: fullAssuredCalls,
-		madeCalls:    map[string][]*Call{},
+		madeCalls:    NewCallStore(),
 	}
 	expected := map[string][]*Call{
 		"GET:test/assured":    {call2, call1},
@@ -84,7 +85,7 @@ func TestWhenEndpointSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, call1, c)
-	require.Equal(t, expected, endpoints.assuredCalls)
+	require.Equal(t, expected, endpoints.assuredCalls.data)
 
 	c, err = endpoints.WhenEndpoint(ctx, call2)
 
@@ -140,22 +141,22 @@ func TestClearEndpointSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, expected, endpoints.assuredCalls)
-	require.Equal(t, expected, endpoints.madeCalls)
+	require.Equal(t, expected, endpoints.assuredCalls.data)
+	require.Equal(t, expected, endpoints.madeCalls.data)
 
 	c, err = endpoints.ClearEndpoint(ctx, call2)
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, expected, endpoints.assuredCalls)
-	require.Equal(t, expected, endpoints.madeCalls)
+	require.Equal(t, expected, endpoints.assuredCalls.data)
+	require.Equal(t, expected, endpoints.madeCalls.data)
 
 	c, err = endpoints.ClearEndpoint(ctx, call3)
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, map[string][]*Call{}, endpoints.assuredCalls)
-	require.Equal(t, map[string][]*Call{}, endpoints.madeCalls)
+	require.Equal(t, map[string][]*Call{}, endpoints.assuredCalls.data)
+	require.Equal(t, map[string][]*Call{}, endpoints.madeCalls.data)
 }
 
 func TestClearAllEndpointSuccess(t *testing.T) {
@@ -169,8 +170,8 @@ func TestClearAllEndpointSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Nil(t, c)
-	require.Equal(t, map[string][]*Call{}, endpoints.assuredCalls)
-	require.Equal(t, map[string][]*Call{}, endpoints.madeCalls)
+	require.Equal(t, map[string][]*Call{}, endpoints.assuredCalls.data)
+	require.Equal(t, map[string][]*Call{}, endpoints.madeCalls.data)
 }
 
 var (
@@ -191,8 +192,10 @@ var (
 		Method:     "POST",
 		StatusCode: http.StatusTeapot,
 	}
-	fullAssuredCalls = map[string][]*Call{
-		"GET:test/assured":    {call1, call2},
-		"POST:teapot/assured": {call3},
+	fullAssuredCalls = &CallStore{
+		data: map[string][]*Call{
+			"GET:test/assured":    {call1, call2},
+			"POST:teapot/assured": {call3},
+		},
 	}
 )
