@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 
 	kitlog "github.com/go-kit/kit/log"
-	"github.com/phayes/freeport"
 )
 
 // Client
@@ -24,11 +24,11 @@ type Client struct {
 
 // NewDefaultClient creates a new go-rest-assured client with default parameters
 func NewDefaultClient() *Client {
-	return NewClient(nil, nil, nil)
+	return NewClient(nil, 0, nil)
 }
 
 // NewClient creates a new go-rest-assured client
-func NewClient(root context.Context, port *int, logger *kitlog.Logger) *Client {
+func NewClient(root context.Context, port int, logger *kitlog.Logger) *Client {
 	if root == nil {
 		root = context.Background()
 	}
@@ -36,15 +36,17 @@ func NewClient(root context.Context, port *int, logger *kitlog.Logger) *Client {
 		l := kitlog.NewLogfmtLogger(ioutil.Discard)
 		logger = &l
 	}
-	if port == nil {
-		p := freeport.GetPort()
-		port = &p
+	if port == 0 {
+		if listen, err := net.Listen("tcp", ":0"); err == nil {
+			port = listen.Addr().(*net.TCPAddr).Port
+			listen.Close()
+		}
 	}
 	ctx, cancel := context.WithCancel(root)
 	c := Client{
 		Errc:       make(chan error),
-		Port:       *port,
 		logger:     *logger,
+		Port:       port,
 		ctx:        ctx,
 		cancel:     cancel,
 		httpClient: &http.Client{},
@@ -55,7 +57,7 @@ func NewClient(root context.Context, port *int, logger *kitlog.Logger) *Client {
 
 // URL returns the url to use to test you stubbed endpoints
 func (c *Client) URL() string {
-	return fmt.Sprintf("http://localhost:%d/when/", c.Port)
+	return fmt.Sprintf("http://localhost:%d/when", c.Port)
 }
 
 // Close is used to close the running service

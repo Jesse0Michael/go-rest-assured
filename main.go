@@ -9,7 +9,6 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/jesse0michael/go-rest-assured/assured"
-	"github.com/phayes/freeport"
 )
 
 func main() {
@@ -21,8 +20,7 @@ func main() {
 		errc <- interrupt()
 	}()
 
-	port := freeport.GetPort()
-	assured.StartApplicationHTTPListener(rootCtx, logger, port, errc)
+	assured.StartApplicationHTTPListener(rootCtx, logger, 0, errc)
 
 	logger.Log("fatal", <-errc)
 }

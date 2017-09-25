@@ -32,7 +32,7 @@ func StartApplicationHTTPListener(root context.Context, logger kitlog.Logger, po
 		}()
 
 		router := createApplicationRouter(ctx, logger)
-		logger.Log("message", fmt.Sprintf("starting go rest assured on port %d", port))
+		logger.Log("message", fmt.Sprintf("starting go rest assured on port %d", listen.Addr().(*net.TCPAddr).Port))
 		errc <- http.Serve(listen, handlers.RecoveryHandler()(router))
 	}()
 }

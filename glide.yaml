@@ -11,4 +11,3 @@ import:
   - log
   - transport/http
   - endpoint
-- package: github.com/phayes/freeport

@@ -12,24 +12,23 @@ import (
 	"testing"
 
 	kitlog "github.com/go-kit/kit/log"
-	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient(t *testing.T) {
 	httpClient := &http.Client{}
 	logger := kitlog.NewLogfmtLogger(ioutil.Discard)
-	port := freeport.GetPort()
 	ctx := context.Background()
-	client := NewClient(ctx, &port, &logger)
+	client := NewClient(ctx, 9091, &logger)
 
 	url := client.URL()
+	require.Equal(t, "http://localhost:9091/when", url)
 
 	require.NoError(t, client.Given(*call1))
 	require.NoError(t, client.Given(*call2))
 	require.NoError(t, client.Given(*call3))
 
-	req, err := http.NewRequest(http.MethodGet, url+"test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
+	req, err := http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
 	require.NoError(t, err)
 
 	resp, err := httpClient.Do(req)
@@ -39,7 +38,7 @@ func TestClient(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte(`{"assured": true}`), body)
 
-	req, err = http.NewRequest(http.MethodGet, url+"test/assured", bytes.NewReader([]byte(`{"calling":"again"}`)))
+	req, err = http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"again"}`)))
 	require.NoError(t, err)
 
 	resp, err = httpClient.Do(req)
@@ -49,7 +48,7 @@ func TestClient(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("error"), body)
 
-	req, err = http.NewRequest(http.MethodPost, url+"teapot/assured", bytes.NewReader([]byte(`{"calling":"here"}`)))
+	req, err = http.NewRequest(http.MethodPost, url+"/teapot/assured", bytes.NewReader([]byte(`{"calling":"here"}`)))
 	require.NoError(t, err)
 
 	resp, err = httpClient.Do(req)
@@ -95,6 +94,8 @@ func TestClient(t *testing.T) {
 func TestClientClose(t *testing.T) {
 	client := NewDefaultClient()
 	client2 := NewDefaultClient()
+
+	require.NotEqual(t, client.URL(), client2.URL())
 
 	require.NoError(t, client.Given(*call1))
 	require.NoError(t, client2.Given(*call1))
