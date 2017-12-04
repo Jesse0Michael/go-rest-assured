@@ -122,15 +122,6 @@ func TestClientGivenMethodFailure(t *testing.T) {
 	require.Equal(t, "cannot stub call without Method", err.Error())
 }
 
-func TestClientGivenPathFailure(t *testing.T) {
-	client := NewDefaultClient()
-
-	err := client.Given(Call{Method: "GOT"})
-
-	require.Error(t, err)
-	require.Equal(t, "cannot stub call without Path", err.Error())
-}
-
 func TestClientBadRequestFailure(t *testing.T) {
 	client := NewDefaultClient()
 

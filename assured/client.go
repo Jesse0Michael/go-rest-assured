@@ -74,10 +74,6 @@ func (c *Client) Given(call Call) error {
 		return fmt.Errorf("cannot stub call without Method")
 	}
 
-	if call.Path == "" {
-		return fmt.Errorf("cannot stub call without Path")
-	}
-
 	if call.Response == nil {
 		req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), nil)
 	} else {
