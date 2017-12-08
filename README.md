@@ -16,6 +16,14 @@ Go-Rest-Assured keeps track of the Assured Calls you have stubbed out and the Ca
 2. `make build`
 3. `bin/go-rest-assured`
 
+```bash
+Usage of bin/go-rest-assured:
+  -logger string
+    	a file to send logs. default logs to STDOUT.
+  -port int
+    	a port to listen on. default automatically assigns a port.
+```
+
 ### Client
 ```go
 import ("github.com/jesse0michael/go-rest-assured/assured")

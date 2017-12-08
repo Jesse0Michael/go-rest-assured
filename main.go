@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -20,7 +21,21 @@ func main() {
 		errc <- interrupt()
 	}()
 
-	assured.StartApplicationHTTPListener(rootCtx, logger, 0, errc)
+	port := flag.Int("port", 0, "a port to listen on. default automatically assigns a port.")
+	logFile := flag.String("logger", "", "a file to send logs. default logs to STDOUT.")
+
+	flag.Parse()
+
+	if *logFile != "" {
+		file, err := os.Create(*logFile)
+		if err != nil {
+			logger.Log("fatal", err.Error())
+			os.Exit(1)
+		}
+		logger = kitlog.NewLogfmtLogger(file)
+	}
+
+	assured.NewClient(rootCtx, *port, &logger)
 
 	logger.Log("fatal", <-errc)
 }
