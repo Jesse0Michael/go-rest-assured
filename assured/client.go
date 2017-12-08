@@ -65,29 +65,33 @@ func (c *Client) Close() {
 	c.cancel()
 }
 
-// Given stubs an assured Call
-func (c *Client) Given(call Call) error {
-	var req *http.Request
-	var err error
+// Given stubs assured Call(s)
+func (c *Client) Given(calls ...Call) error {
+	for _, call := range calls {
+		var req *http.Request
+		var err error
 
-	if call.Method == "" {
-		return fmt.Errorf("cannot stub call without Method")
-	}
+		if call.Method == "" {
+			return fmt.Errorf("cannot stub call without Method")
+		}
 
-	if call.Response == nil {
-		req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), nil)
-	} else {
-		req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), bytes.NewReader(call.Response))
-	}
-	if err != nil {
-		return err
-	}
-	if call.StatusCode != 0 {
-		req.Header.Set("Assured-Status", fmt.Sprintf("%d", call.StatusCode))
-	}
+		if call.Response == nil {
+			req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), nil)
+		} else {
+			req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), bytes.NewReader(call.Response))
+		}
+		if err != nil {
+			return err
+		}
+		if call.StatusCode != 0 {
+			req.Header.Set("Assured-Status", fmt.Sprintf("%d", call.StatusCode))
+		}
 
-	_, err = c.httpClient.Do(req)
-	return err
+		if _, err = c.httpClient.Do(req); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Verify returns all of the calls made against a stubbed method and path

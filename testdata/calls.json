@@ -1,0 +1,17 @@
+[
+  {
+    "path": "test/assured",
+		"method": "GET",
+		"status_code": 200
+  },
+  {
+    "path": "test/assured",
+		"method": "GET",
+		"status_code": 409
+  },
+  {
+    "path": "test/assured",
+		"method": "POST",
+		"status_code": 418
+  }
+]

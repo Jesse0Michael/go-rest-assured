@@ -22,6 +22,8 @@ Usage of bin/go-rest-assured:
     	a file to send logs. default logs to STDOUT.
   -port int
     	a port to listen on. default automatically assigns a port.
+  -preload string
+    	a file to parse preloaded calls from.
 ```
 
 ### Client
