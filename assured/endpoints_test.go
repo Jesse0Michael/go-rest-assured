@@ -3,7 +3,6 @@ package assured
 import (
 	"context"
 	"io/ioutil"
-	"net/http"
 	"testing"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -11,20 +10,20 @@ import (
 )
 
 func TestNewAssuredEndpoints(t *testing.T) {
-	logger := kitlog.NewLogfmtLogger(ioutil.Discard)
 	expected := &AssuredEndpoints{
-		logger:       logger,
-		assuredCalls: NewCallStore(),
-		madeCalls:    NewCallStore(),
+		logger:         testSettings.Logger,
+		assuredCalls:   NewCallStore(),
+		madeCalls:      NewCallStore(),
+		trackMadeCalls: true,
 	}
-	actual := NewAssuredEndpoints(logger)
+	actual := NewAssuredEndpoints(testSettings)
 
 	require.Equal(t, expected.assuredCalls, actual.assuredCalls)
 	require.Equal(t, expected.madeCalls, actual.madeCalls)
 }
 
 func TestWrappedEndpointSuccess(t *testing.T) {
-	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+	endpoints := NewAssuredEndpoints(testSettings)
 	testEndpoint := func(ctx context.Context, call *Call) (interface{}, error) {
 		return call, nil
 	}
@@ -37,7 +36,7 @@ func TestWrappedEndpointSuccess(t *testing.T) {
 }
 
 func TestWrappedEndpointFailure(t *testing.T) {
-	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+	endpoints := NewAssuredEndpoints(testSettings)
 	testEndpoint := func(ctx context.Context, call *Call) (interface{}, error) {
 		return call, nil
 	}
@@ -51,7 +50,7 @@ func TestWrappedEndpointFailure(t *testing.T) {
 }
 
 func TestGivenEndpointSuccess(t *testing.T) {
-	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+	endpoints := NewAssuredEndpoints(testSettings)
 
 	c, err := endpoints.GivenEndpoint(ctx, call1)
 
@@ -73,8 +72,10 @@ func TestGivenEndpointSuccess(t *testing.T) {
 
 func TestWhenEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		assuredCalls: fullAssuredCalls,
-		madeCalls:    NewCallStore(),
+		logger:         testSettings.Logger,
+		assuredCalls:   fullAssuredCalls,
+		madeCalls:      NewCallStore(),
+		trackMadeCalls: true,
 	}
 	expected := map[string][]*Call{
 		"GET:test/assured":    {call2, call1},
@@ -101,8 +102,40 @@ func TestWhenEndpointSuccess(t *testing.T) {
 	require.Equal(t, fullAssuredCalls, endpoints.madeCalls)
 }
 
+func TestWhenEndpointSuccessTrackingDisabled(t *testing.T) {
+	endpoints := &AssuredEndpoints{
+		logger:         testSettings.Logger,
+		assuredCalls:   fullAssuredCalls,
+		madeCalls:      NewCallStore(),
+		trackMadeCalls: false,
+	}
+	expected := map[string][]*Call{
+		"GET:test/assured":    {call2, call1},
+		"POST:teapot/assured": {call3},
+	}
+
+	c, err := endpoints.WhenEndpoint(ctx, call1)
+
+	require.NoError(t, err)
+	require.Equal(t, call1, c)
+	require.Equal(t, expected, endpoints.assuredCalls.data)
+
+	c, err = endpoints.WhenEndpoint(ctx, call2)
+
+	require.NoError(t, err)
+	require.Equal(t, call2, c)
+	require.Equal(t, fullAssuredCalls, endpoints.assuredCalls)
+
+	c, err = endpoints.WhenEndpoint(ctx, call3)
+
+	require.NoError(t, err)
+	require.Equal(t, call3, c)
+	require.Equal(t, fullAssuredCalls, endpoints.assuredCalls)
+	require.Equal(t, NewCallStore(), endpoints.madeCalls)
+}
+
 func TestWhenEndpointNotFound(t *testing.T) {
-	endpoints := NewAssuredEndpoints(kitlog.NewLogfmtLogger(ioutil.Discard))
+	endpoints := NewAssuredEndpoints(testSettings)
 
 	c, err := endpoints.WhenEndpoint(ctx, call1)
 
@@ -113,7 +146,8 @@ func TestWhenEndpointNotFound(t *testing.T) {
 
 func TestVerifyEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		madeCalls: fullAssuredCalls,
+		madeCalls:      fullAssuredCalls,
+		trackMadeCalls: true,
 	}
 
 	c, err := endpoints.VerifyEndpoint(ctx, call1)
@@ -127,11 +161,25 @@ func TestVerifyEndpointSuccess(t *testing.T) {
 	require.Equal(t, []*Call{call3}, c)
 }
 
+func TestVerifyEndpointTrackingDisabled(t *testing.T) {
+	endpoints := &AssuredEndpoints{
+		madeCalls:      fullAssuredCalls,
+		trackMadeCalls: false,
+	}
+
+	c, err := endpoints.VerifyEndpoint(ctx, call1)
+
+	require.Nil(t, c)
+	require.Error(t, err)
+	require.Equal(t, "Tracking made calls is disabled", err.Error())
+}
+
 func TestClearEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:       kitlog.NewLogfmtLogger(ioutil.Discard),
-		assuredCalls: fullAssuredCalls,
-		madeCalls:    fullAssuredCalls,
+		logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		assuredCalls:   fullAssuredCalls,
+		madeCalls:      fullAssuredCalls,
+		trackMadeCalls: true,
 	}
 	expected := map[string][]*Call{
 		"POST:teapot/assured": {call3},
@@ -161,9 +209,10 @@ func TestClearEndpointSuccess(t *testing.T) {
 
 func TestClearAllEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:       kitlog.NewLogfmtLogger(ioutil.Discard),
-		assuredCalls: fullAssuredCalls,
-		madeCalls:    fullAssuredCalls,
+		logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		assuredCalls:   fullAssuredCalls,
+		madeCalls:      fullAssuredCalls,
+		trackMadeCalls: true,
 	}
 
 	c, err := endpoints.ClearAllEndpoint(ctx, nil)
@@ -173,29 +222,3 @@ func TestClearAllEndpointSuccess(t *testing.T) {
 	require.Equal(t, map[string][]*Call{}, endpoints.assuredCalls.data)
 	require.Equal(t, map[string][]*Call{}, endpoints.madeCalls.data)
 }
-
-var (
-	call1 = &Call{
-		Path:       "test/assured",
-		Method:     "GET",
-		StatusCode: http.StatusOK,
-		Response:   []byte(`{"assured": true}`),
-	}
-	call2 = &Call{
-		Path:       "test/assured",
-		Method:     "GET",
-		StatusCode: http.StatusConflict,
-		Response:   []byte("error"),
-	}
-	call3 = &Call{
-		Path:       "teapot/assured",
-		Method:     "POST",
-		StatusCode: http.StatusTeapot,
-	}
-	fullAssuredCalls = &CallStore{
-		data: map[string][]*Call{
-			"GET:test/assured":    {call1, call2},
-			"POST:teapot/assured": {call3},
-		},
-	}
-)

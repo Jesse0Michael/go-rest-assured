@@ -10,17 +10,26 @@ import (
 
 // AssuredEndpoints
 type AssuredEndpoints struct {
-	logger       kitlog.Logger
-	assuredCalls *CallStore
-	madeCalls    *CallStore
+	logger         kitlog.Logger
+	assuredCalls   *CallStore
+	madeCalls      *CallStore
+	trackMadeCalls bool
+}
+
+// Settings
+type Settings struct {
+	Logger         kitlog.Logger
+	Port           int
+	TrackMadeCalls bool
 }
 
 // NewAssuredEndpoints creates a new instance of assured endpoints
-func NewAssuredEndpoints(l kitlog.Logger) *AssuredEndpoints {
+func NewAssuredEndpoints(settings Settings) *AssuredEndpoints {
 	return &AssuredEndpoints{
-		logger:       l,
-		assuredCalls: NewCallStore(),
-		madeCalls:    NewCallStore(),
+		assuredCalls:   NewCallStore(),
+		madeCalls:      NewCallStore(),
+		logger:         settings.Logger,
+		trackMadeCalls: settings.TrackMadeCalls,
 	}
 }
 
@@ -31,6 +40,7 @@ func (a *AssuredEndpoints) WrappedEndpoint(handler func(context.Context, *Call) 
 		if !ok {
 			return nil, errors.New("unable to convert request to assured Call")
 		}
+
 		return handler(ctx, a)
 	}
 }
@@ -51,16 +61,22 @@ func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interf
 		return nil, errors.New("No assured calls")
 	}
 
-	a.madeCalls.Add(call)
+	if a.trackMadeCalls {
+		a.madeCalls.Add(call)
+	}
 	assured := calls[0]
 	a.assuredCalls.Rotate(assured)
 
+	a.logger.Log("message", "assured call responded", "path", call.ID())
 	return assured, nil
 }
 
 // VerifyEndpoint is used to verify a particular call
 func (a *AssuredEndpoints) VerifyEndpoint(ctx context.Context, call *Call) (interface{}, error) {
-	return a.madeCalls.Get(call.ID()), nil
+	if a.trackMadeCalls {
+		return a.madeCalls.Get(call.ID()), nil
+	}
+	return nil, errors.New("Tracking made calls is disabled")
 }
 
 //ClearEndpoint is used to clear a specific assured call

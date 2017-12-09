@@ -24,6 +24,8 @@ Usage of bin/go-rest-assured:
     	a port to listen on. default automatically assigns a port.
   -preload string
     	a file to parse preloaded calls from.
+  -track
+    	a flag to enable the storing of calls made to the service. (default true)
 ```
 
 ### Client

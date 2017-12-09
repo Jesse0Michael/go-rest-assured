@@ -26,6 +26,7 @@ func main() {
 	port := flag.Int("port", 0, "a port to listen on. default automatically assigns a port.")
 	logFile := flag.String("logger", "", "a file to send logs. default logs to STDOUT.")
 	preload := flag.String("preload", "", "a file to parse preloaded calls from.")
+	trackMade := flag.Bool("track", true, "a flag to enable the storing of calls made to the service.")
 
 	flag.Parse()
 
@@ -39,7 +40,12 @@ func main() {
 		logger = kitlog.NewLogfmtLogger(file)
 	}
 
-	client := assured.NewClient(rootCtx, *port, &logger)
+	settings := assured.Settings{
+		Logger:         logger,
+		Port:           *port,
+		TrackMadeCalls: *trackMade,
+	}
+	client := assured.NewClient(rootCtx, settings)
 
 	// If preload file specified, parse the file and load all calls into the assured client
 	if *preload != "" {

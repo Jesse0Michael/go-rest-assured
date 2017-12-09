@@ -9,19 +9,18 @@ import (
 	"net/http"
 	"strconv"
 
-	kitlog "github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 // StartApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
-func StartApplicationHTTPListener(root context.Context, logger kitlog.Logger, port int, errc chan error) {
+func StartApplicationHTTPListener(root context.Context, errc chan error, settings Settings) {
 	go func() {
 		ctx, cancel := context.WithCancel(root)
 		defer cancel()
 
-		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", settings.Port))
 		if err != nil {
 			panic(err)
 		}
@@ -31,16 +30,16 @@ func StartApplicationHTTPListener(root context.Context, logger kitlog.Logger, po
 			listen.Close()
 		}()
 
-		router := createApplicationRouter(ctx, logger)
-		logger.Log("message", fmt.Sprintf("starting go rest assured on port %d", listen.Addr().(*net.TCPAddr).Port))
+		router := createApplicationRouter(ctx, settings)
+		settings.Logger.Log("message", fmt.Sprintf("starting go rest assured on port %d", listen.Addr().(*net.TCPAddr).Port))
 		errc <- http.Serve(listen, handlers.RecoveryHandler()(router))
 	}()
 }
 
 // createApplicationRouter sets up the router that will handle all of the application routes
-func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Router {
+func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router {
 	router := mux.NewRouter()
-	e := NewAssuredEndpoints(logger)
+	e := NewAssuredEndpoints(settings)
 	assuredMethods := []string{
 		http.MethodGet,
 		http.MethodHead,
@@ -58,7 +57,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 			e.WrappedEndpoint(e.GivenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(logger),
+			kithttp.ServerErrorLogger(settings.Logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -68,7 +67,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 			e.WrappedEndpoint(e.WhenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(logger),
+			kithttp.ServerErrorLogger(settings.Logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -78,7 +77,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 			e.WrappedEndpoint(e.VerifyEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(logger),
+			kithttp.ServerErrorLogger(settings.Logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -88,7 +87,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 			e.WrappedEndpoint(e.ClearEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(logger),
+			kithttp.ServerErrorLogger(settings.Logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -98,7 +97,7 @@ func createApplicationRouter(ctx context.Context, logger kitlog.Logger) *mux.Rou
 			e.ClearAllEndpoint,
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(logger),
+			kithttp.ServerErrorLogger(settings.Logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(http.MethodDelete)
 

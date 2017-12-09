@@ -14,7 +14,7 @@ import (
 )
 
 func TestApplicationRouterGivenBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
+	router := createApplicationRouter(ctx, testSettings)
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/given/rest/assured", nil)
@@ -27,7 +27,7 @@ func TestApplicationRouterGivenBinding(t *testing.T) {
 }
 
 func TestApplicationRouterWhenBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
+	router := createApplicationRouter(ctx, testSettings)
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/given/rest/assured", bytes.NewBuffer([]byte(`{"assured": true}`)))
@@ -45,7 +45,7 @@ func TestApplicationRouterWhenBinding(t *testing.T) {
 }
 
 func TestApplicationRouterVerifyBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
+	router := createApplicationRouter(ctx, testSettings)
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/verify/rest/assured", nil)
@@ -58,7 +58,7 @@ func TestApplicationRouterVerifyBinding(t *testing.T) {
 }
 
 func TestApplicationRouterClearBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
+	router := createApplicationRouter(ctx, testSettings)
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/clear/rest/assured", nil)
@@ -71,7 +71,7 @@ func TestApplicationRouterClearBinding(t *testing.T) {
 }
 
 func TestApplicationRouterClearAllBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
+	router := createApplicationRouter(ctx, testSettings)
 
 	req, err := http.NewRequest(http.MethodDelete, "/clear", nil)
 	require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestApplicationRouterClearAllBinding(t *testing.T) {
 }
 
 func TestApplicationRouterFailure(t *testing.T) {
-	router := createApplicationRouter(ctx, kitlog.NewLogfmtLogger(ioutil.Discard))
+	router := createApplicationRouter(ctx, testSettings)
 
 	req, err := http.NewRequest(http.MethodGet, "/trouble", nil)
 	require.NoError(t, err)
@@ -221,9 +221,10 @@ func TestEncodeAssuredCalls(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, "application/json", resp.HeaderMap.Get("Content-Type"))
-	require.Equal(t, `[{"Path":"test/assured","Method":"GET","StatusCode":200,"Response":"eyJhc3N1cmVkIjogdHJ1ZX0="},{"Path":"test/assured","Method":"GET","StatusCode":409,"Response":"ZXJyb3I="}]`+"\n", resp.Body.String())
+	require.Equal(t, `[{"path":"test/assured","method":"GET","status_code":200,"response":"eyJhc3N1cmVkIjogdHJ1ZX0="},{"path":"test/assured","method":"GET","status_code":409,"response":"ZXJyb3I="}]`+"\n", resp.Body.String())
 }
 
+//go-rest-assured test vars
 var (
 	ctx   = context.Background()
 	verbs = []string{
@@ -235,5 +236,32 @@ var (
 		http.MethodDelete,
 		http.MethodConnect,
 		http.MethodOptions,
+	}
+	call1 = &Call{
+		Path:       "test/assured",
+		Method:     "GET",
+		StatusCode: http.StatusOK,
+		Response:   []byte(`{"assured": true}`),
+	}
+	call2 = &Call{
+		Path:       "test/assured",
+		Method:     "GET",
+		StatusCode: http.StatusConflict,
+		Response:   []byte("error"),
+	}
+	call3 = &Call{
+		Path:       "teapot/assured",
+		Method:     "POST",
+		StatusCode: http.StatusTeapot,
+	}
+	fullAssuredCalls = &CallStore{
+		data: map[string][]*Call{
+			"GET:test/assured":    {call1, call2},
+			"POST:teapot/assured": {call3},
+		},
+	}
+	testSettings = Settings{
+		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		TrackMadeCalls: true,
 	}
 )

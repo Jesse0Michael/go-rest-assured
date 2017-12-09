@@ -16,7 +16,6 @@ import (
 type Client struct {
 	Errc       chan error
 	Port       int
-	logger     kitlog.Logger
 	ctx        context.Context
 	cancel     context.CancelFunc
 	httpClient *http.Client
@@ -24,34 +23,32 @@ type Client struct {
 
 // NewDefaultClient creates a new go-rest-assured client with default parameters
 func NewDefaultClient() *Client {
-	return NewClient(nil, 0, nil)
+	settings := Settings{
+		Logger: kitlog.NewLogfmtLogger(ioutil.Discard),
+	}
+	return NewClient(nil, settings)
 }
 
 // NewClient creates a new go-rest-assured client
-func NewClient(root context.Context, port int, logger *kitlog.Logger) *Client {
+func NewClient(root context.Context, settings Settings) *Client {
 	if root == nil {
 		root = context.Background()
 	}
-	if logger == nil {
-		l := kitlog.NewLogfmtLogger(ioutil.Discard)
-		logger = &l
-	}
-	if port == 0 {
+	if settings.Port == 0 {
 		if listen, err := net.Listen("tcp", ":0"); err == nil {
-			port = listen.Addr().(*net.TCPAddr).Port
+			settings.Port = listen.Addr().(*net.TCPAddr).Port
 			listen.Close()
 		}
 	}
 	ctx, cancel := context.WithCancel(root)
 	c := Client{
 		Errc:       make(chan error),
-		logger:     *logger,
-		Port:       port,
+		Port:       settings.Port,
 		ctx:        ctx,
 		cancel:     cancel,
 		httpClient: &http.Client{},
 	}
-	StartApplicationHTTPListener(c.ctx, c.logger, c.Port, c.Errc)
+	StartApplicationHTTPListener(c.ctx, c.Errc, settings)
 	return &c
 }
 

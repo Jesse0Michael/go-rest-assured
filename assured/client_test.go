@@ -17,9 +17,13 @@ import (
 
 func TestClient(t *testing.T) {
 	httpClient := &http.Client{}
-	logger := kitlog.NewLogfmtLogger(ioutil.Discard)
 	ctx := context.Background()
-	client := NewClient(ctx, 9091, &logger)
+	settings := Settings{
+		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		Port:           9091,
+		TrackMadeCalls: true,
+	}
+	client := NewClient(ctx, settings)
 
 	url := client.URL()
 	require.Equal(t, "http://localhost:9091/when", url)
