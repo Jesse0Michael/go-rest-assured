@@ -15,6 +15,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	AssuredStatus         = "Assured-Status"
+	AssuredCallbackKey    = "Assured-Callback-Key"
+	AssuredCallbackTarget = "Assured-Callback-Target"
+	AssuredCallbackDelay  = "Assured-Callback-Delay"
+)
+
 // StartApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
 func StartApplicationHTTPListener(root context.Context, errc chan error, settings Settings) {
 	go func() {
@@ -115,7 +122,7 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 	}
 
 	// Set status code override
-	if statusCode, err := strconv.ParseInt(req.Header.Get("Assured-Status"), 10, 64); err == nil {
+	if statusCode, err := strconv.ParseInt(req.Header.Get(AssuredStatus), 10, 64); err == nil {
 		ac.StatusCode = int(statusCode)
 	}
 
@@ -143,7 +150,7 @@ func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}
 	case *Call:
 		w.WriteHeader(resp.StatusCode)
 		for key, value := range resp.Headers {
-			if !strings.HasPrefix(key, "Assured") {
+			if !strings.HasPrefix(key, "Assured-") {
 				w.Header().Set(key, value)
 			}
 		}

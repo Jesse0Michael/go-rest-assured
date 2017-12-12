@@ -275,6 +275,7 @@ var (
 	}
 	testSettings = Settings{
 		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		HTTPClient:     *http.DefaultClient,
 		TrackMadeCalls: true,
 	}
 )

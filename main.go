@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -44,6 +45,7 @@ func main() {
 		Logger:         logger,
 		Port:           *port,
 		TrackMadeCalls: *trackMade,
+		HTTPClient:     *http.DefaultClient,
 	}
 	client := assured.NewClient(rootCtx, settings)
 

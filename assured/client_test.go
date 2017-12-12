@@ -22,6 +22,7 @@ func TestClient(t *testing.T) {
 		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
 		Port:           9091,
 		TrackMadeCalls: true,
+		HTTPClient:     *httpClient,
 	}
 	client := NewClient(ctx, settings)
 

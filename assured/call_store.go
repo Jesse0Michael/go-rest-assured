@@ -43,3 +43,18 @@ func (c *CallStore) ClearAll() {
 	c.data = map[string][]*Call{}
 	c.Unlock()
 }
+
+func (c *CallStore) AddCallback(key string, callback *Call) []*Call {
+	var changed []*Call
+	c.Lock()
+	for _, calls := range c.data {
+		for _, call := range calls {
+			if call.Headers[AssuredCallbackKey] == key {
+				call.Callbacks = append(call.Callbacks, *callback)
+				changed = append(changed, call)
+			}
+		}
+	}
+	c.Unlock()
+	return changed
+}

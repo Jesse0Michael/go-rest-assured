@@ -3,6 +3,7 @@ package assured
 import (
 	"context"
 	"io/ioutil"
+	"net/http"
 	"testing"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -12,6 +13,7 @@ import (
 func TestNewAssuredEndpoints(t *testing.T) {
 	expected := &AssuredEndpoints{
 		logger:         testSettings.Logger,
+		httpClient:     *http.DefaultClient,
 		assuredCalls:   NewCallStore(),
 		madeCalls:      NewCallStore(),
 		trackMadeCalls: true,

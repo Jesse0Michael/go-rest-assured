@@ -11,6 +11,7 @@ type Call struct {
 	StatusCode int               `json:"status_code"`
 	Headers    map[string]string `json:"headers"`
 	Response   []byte            `json:"response,omitempty"`
+	Callbacks  []Call            `json:"callbacks,omitempty"`
 }
 
 // ID is used as a key when managing stubbed and made calls
