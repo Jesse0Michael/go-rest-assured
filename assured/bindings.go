@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/handlers"
@@ -112,10 +113,22 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 		Method:     req.Method,
 		StatusCode: http.StatusOK,
 	}
+
+	// Set status code override
 	if statusCode, err := strconv.ParseInt(req.Header.Get("Assured-Status"), 10, 64); err == nil {
 		ac.StatusCode = int(statusCode)
 	}
 
+	// Set headers
+	headers := map[string]string{}
+	for key, value := range req.Header {
+		if !strings.HasPrefix(key, "Assured") {
+			headers[key] = value[0]
+		}
+	}
+	ac.Headers = headers
+
+	// Set response body
 	if req.Body != nil {
 		defer req.Body.Close()
 		if bytes, err := ioutil.ReadAll(req.Body); err == nil {
@@ -131,6 +144,9 @@ func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}
 	switch resp := i.(type) {
 	case *Call:
 		w.WriteHeader(resp.StatusCode)
+		for key, value := range resp.Headers {
+			w.Header().Set(key, value)
+		}
 		w.Write([]byte(resp.String()))
 	case []*Call:
 		w.Header().Set("Content-Type", "application/json")

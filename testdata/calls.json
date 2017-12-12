@@ -2,16 +2,33 @@
   {
     "path": "test/assured",
 		"method": "GET",
-		"status_code": 200
+    "status_code": 200,
+    "response": "eyJhc3N1cmVkIjogdHJ1ZX0=",
+    "headers": {
+      "Content-Length": "17", 
+      "User-Agent": "Go-http-client/1.1", 
+      "Accept-Encoding": "gzip"
+    }
   },
   {
     "path": "test/assured",
 		"method": "GET",
-		"status_code": 409
+    "status_code": 409,
+    "response": "ZXJyb3I=",
+    "headers": {
+      "Content-Length": "5", 
+      "User-Agent": "Go-http-client/1.1", 
+      "Accept-Encoding": "gzip"
+    }
   },
   {
-    "path": "test/assured",
+    "path": "teapot/assured",
 		"method": "POST",
-		"status_code": 418
+    "status_code": 418,
+    "headers": {
+      "Content-Length": "0", 
+      "User-Agent": "Go-http-client/1.1", 
+      "Accept-Encoding": "gzip"
+    }
   }
 ]

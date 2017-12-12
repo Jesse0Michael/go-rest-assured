@@ -98,6 +98,7 @@ func TestDecodeAssuredCall(t *testing.T) {
 		StatusCode: http.StatusOK,
 		Method:     http.MethodPost,
 		Response:   []byte(`{"assured": true}`),
+		Headers:    map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -124,6 +125,7 @@ func TestDecodeAssuredCallNilBody(t *testing.T) {
 		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodDelete,
+		Headers:    map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -150,6 +152,7 @@ func TestDecodeAssuredCallStatus(t *testing.T) {
 		Path:       "test/assured",
 		StatusCode: http.StatusForbidden,
 		Method:     http.MethodGet,
+		Headers:    map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -177,6 +180,7 @@ func TestDecodeAssuredCallStatusFailure(t *testing.T) {
 		Path:       "test/assured",
 		StatusCode: http.StatusOK,
 		Method:     http.MethodGet,
+		Headers:    map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -204,6 +208,7 @@ func TestEncodeAssuredCall(t *testing.T) {
 		StatusCode: http.StatusCreated,
 		Method:     http.MethodPost,
 		Response:   []byte(`{"assured": true}`),
+		Headers:    map[string]string{"Content-Length": "19", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
 	resp := httptest.NewRecorder()
 
@@ -212,16 +217,21 @@ func TestEncodeAssuredCall(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusCreated, resp.Code)
 	require.Equal(t, `{"assured": true}`, resp.Body.String())
+	require.Equal(t, "19", resp.Header().Get("Content-Length"))
+	require.Equal(t, "Go-http-client/1.1", resp.Header().Get("User-Agent"))
+	require.Equal(t, "gzip", resp.Header().Get("Accept-Encoding"))
 }
 
 func TestEncodeAssuredCalls(t *testing.T) {
 	resp := httptest.NewRecorder()
-
-	err := encodeAssuredCall(ctx, resp, []*Call{call1, call2})
+	expected, err := ioutil.ReadFile("../testdata/calls.json")
+	require.NoError(t, err)
+	err = encodeAssuredCall(ctx, resp, []*Call{call1, call2, call3})
 
 	require.NoError(t, err)
 	require.Equal(t, "application/json", resp.HeaderMap.Get("Content-Type"))
-	require.Equal(t, `[{"path":"test/assured","method":"GET","status_code":200,"response":"eyJhc3N1cmVkIjogdHJ1ZX0="},{"path":"test/assured","method":"GET","status_code":409,"response":"ZXJyb3I="}]`+"\n", resp.Body.String())
+	require.JSONEq(t, string(expected), resp.Body.String())
+	// require.Equal(t, `[{"path":"test/assured","method":"GET","status_code":200,"response":"eyJhc3N1cmVkIjogdHJ1ZX0="},{"path":"test/assured","method":"GET","status_code":409,"response":"ZXJyb3I="}]`+"\n", resp.Body.String())
 }
 
 //go-rest-assured test vars
@@ -242,17 +252,20 @@ var (
 		Method:     "GET",
 		StatusCode: http.StatusOK,
 		Response:   []byte(`{"assured": true}`),
+		Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
 	call2 = &Call{
 		Path:       "test/assured",
 		Method:     "GET",
 		StatusCode: http.StatusConflict,
 		Response:   []byte("error"),
+		Headers:    map[string]string{"Content-Length": "5", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
 	call3 = &Call{
 		Path:       "teapot/assured",
 		Method:     "POST",
 		StatusCode: http.StatusTeapot,
+		Headers:    map[string]string{"Content-Length": "0", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
 	fullAssuredCalls = &CallStore{
 		data: map[string][]*Call{

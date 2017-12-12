@@ -6,10 +6,11 @@ import (
 
 // Call is a structure containing a request that is stubbed or made
 type Call struct {
-	Path       string `json:"path"`
-	Method     string `json:"method"`
-	StatusCode int    `json:"status_code"`
-	Response   []byte `json:"response"`
+	Path       string            `json:"path"`
+	Method     string            `json:"method"`
+	StatusCode int               `json:"status_code"`
+	Headers    map[string]string `json:"headers"`
+	Response   []byte            `json:"response,omitempty"`
 }
 
 // ID is used as a key when managing stubbed and made calls

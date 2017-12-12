@@ -65,12 +65,28 @@ func TestClient(t *testing.T) {
 	calls, err := client.Verify("GET", "test/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
-		Call{Method: "GET", Path: "test/assured", StatusCode: 200, Response: []byte(`{"calling":"you"}`)},
-		Call{Method: "GET", Path: "test/assured", StatusCode: 200, Response: []byte(`{"calling":"again"}`)}}, calls)
+		Call{
+			Method:     "GET",
+			Path:       "test/assured",
+			StatusCode: 200,
+			Response:   []byte(`{"calling":"you"}`),
+			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}},
+		Call{
+			Method:     "GET",
+			Path:       "test/assured",
+			StatusCode: 200,
+			Response:   []byte(`{"calling":"again"}`),
+			Headers:    map[string]string{"Content-Length": "19", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
 	calls, err = client.Verify("POST", "teapot/assured")
 	require.NoError(t, err)
-	require.Equal(t, []Call{Call{Method: "POST", Path: "teapot/assured", StatusCode: 200, Response: []byte(`{"calling":"here"}`)}}, calls)
+	require.Equal(t, []Call{
+		Call{
+			Method:     "POST",
+			Path:       "teapot/assured",
+			StatusCode: 200,
+			Response:   []byte(`{"calling":"here"}`),
+			Headers:    map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
 	err = client.Clear("GET", "test/assured")
 	require.NoError(t, err)
@@ -81,7 +97,13 @@ func TestClient(t *testing.T) {
 
 	calls, err = client.Verify("POST", "teapot/assured")
 	require.NoError(t, err)
-	require.Equal(t, []Call{Call{Method: "POST", Path: "teapot/assured", StatusCode: 200, Response: []byte(`{"calling":"here"}`)}}, calls)
+	require.Equal(t, []Call{
+		Call{
+			Method:     "POST",
+			Path:       "teapot/assured",
+			StatusCode: 200,
+			Response:   []byte(`{"calling":"here"}`),
+			Headers:    map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
 	err = client.ClearAll()
 	require.NoError(t, err)
