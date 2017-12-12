@@ -122,9 +122,7 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 	// Set headers
 	headers := map[string]string{}
 	for key, value := range req.Header {
-		if !strings.HasPrefix(key, "Assured") {
-			headers[key] = value[0]
-		}
+		headers[key] = value[0]
 	}
 	ac.Headers = headers
 
@@ -145,7 +143,9 @@ func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}
 	case *Call:
 		w.WriteHeader(resp.StatusCode)
 		for key, value := range resp.Headers {
-			w.Header().Set(key, value)
+			if !strings.HasPrefix(key, "Assured") {
+				w.Header().Set(key, value)
+			}
 		}
 		w.Write([]byte(resp.String()))
 	case []*Call:
