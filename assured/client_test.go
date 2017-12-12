@@ -226,3 +226,17 @@ func TestClientVerifyBodyFailure(t *testing.T) {
 	require.Equal(t, `json: cannot unmarshal string into Go value of type []assured.Call`, err.Error())
 	require.Nil(t, calls)
 }
+
+func TestClientPathSanitization(t *testing.T) {
+	httpClient := &http.Client{}
+	client := NewDefaultClient()
+
+	require.NoError(t, client.Given(Call{Method: "GET", Path: "///yoyo/path///", StatusCode: http.StatusAccepted}))
+
+	req, err := http.NewRequest(http.MethodGet, client.URL()+"/yoyo/path", nil)
+	require.NoError(t, err)
+
+	resp, err := httpClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusAccepted, resp.StatusCode)
+}

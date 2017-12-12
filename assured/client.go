@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
 )
@@ -71,6 +72,9 @@ func (c *Client) Given(calls ...Call) error {
 		if call.Method == "" {
 			return fmt.Errorf("cannot stub call without Method")
 		}
+
+		// Sanitize Path
+		call.Path = strings.Trim(call.Path, "/")
 
 		if call.Response == nil {
 			req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), nil)
