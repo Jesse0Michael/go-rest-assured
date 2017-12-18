@@ -19,6 +19,12 @@ func (c *CallStore) Add(call *Call) {
 	c.Unlock()
 }
 
+func (c *CallStore) AddAt(key string, call *Call) {
+	c.Lock()
+	c.data[key] = append(c.data[key], call)
+	c.Unlock()
+}
+
 func (c *CallStore) Rotate(call *Call) {
 	c.Lock()
 	c.data[call.ID()] = append(c.data[call.ID()][1:], call)
@@ -42,19 +48,4 @@ func (c *CallStore) ClearAll() {
 	c.Lock()
 	c.data = map[string][]*Call{}
 	c.Unlock()
-}
-
-func (c *CallStore) AddCallback(key string, callback *Call) []*Call {
-	var changed []*Call
-	c.Lock()
-	for _, calls := range c.data {
-		for _, call := range calls {
-			if call.Headers[AssuredCallbackKey] == key {
-				call.Callbacks = append(call.Callbacks, *callback)
-				changed = append(changed, call)
-			}
-		}
-	}
-	c.Unlock()
-	return changed
 }

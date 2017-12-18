@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
+	"github.com/pborman/uuid"
 )
 
 // Client
@@ -81,9 +82,39 @@ func (c *Client) Given(calls ...Call) error {
 		if call.StatusCode != 0 {
 			req.Header.Set(AssuredStatus, fmt.Sprintf("%d", call.StatusCode))
 		}
+		for key, value := range call.Headers {
+			req.Header.Set(key, value)
+		}
+
+		// Create callbacks
+		callbacks := make([]*http.Request, len(call.Callbacks))
+		callbackKey := uuid.New()
+		for i, callback := range call.Callbacks {
+			if callback.Target == "" {
+				return fmt.Errorf("cannot stub callback without target")
+			}
+			callbackReq, err := http.NewRequest(callback.Method, fmt.Sprintf("http://localhost:%d/callback", c.Port), bytes.NewReader(callback.Response))
+			if err != nil {
+				return err
+			}
+			callbackReq.Header.Set(AssuredCallbackTarget, callback.Target)
+			callbackReq.Header.Set(AssuredCallbackKey, callbackKey)
+			for key, value := range callback.Headers {
+				callbackReq.Header.Set(key, value)
+			}
+			callbacks[i] = callbackReq
+		}
+		if len(callbacks) > 0 {
+			req.Header.Set(AssuredCallbackKey, callbackKey)
+		}
 
 		if _, err = c.httpClient.Do(req); err != nil {
 			return err
+		}
+		for _, cReq := range callbacks {
+			if _, err = c.httpClient.Do(cReq); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
