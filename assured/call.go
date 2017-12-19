@@ -31,6 +31,7 @@ func (c Call) String() string {
 type Callback struct {
 	Target   string            `json:"target"`
 	Method   string            `json:"method"`
+	Delay    int               `json:"delay,omitempty"`
 	Headers  map[string]string `json:"headers"`
 	Response []byte            `json:"response,omitempty"`
 }

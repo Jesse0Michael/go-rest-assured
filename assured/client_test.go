@@ -122,12 +122,19 @@ func TestClient(t *testing.T) {
 func TestClientCallbacks(t *testing.T) {
 	httpClient := http.Client{}
 	called := false
+	delayCalled := false
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		require.NoError(t, err)
 		require.Equal(t, []byte(`{"done":"here"}`), body)
 		require.NotEmpty(t, r.Header.Get("x-info"))
 		called = true
+	}))
+	delayTestServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadAll(r.Body)
+		require.NoError(t, err)
+		require.Equal(t, []byte(`{"wait":"there's more"}`), body)
+		delayCalled = true
 	}))
 	client := NewDefaultClient()
 
@@ -141,6 +148,12 @@ func TestClientCallbacks(t *testing.T) {
 				Response: []byte(`{"done":"here"}`),
 				Headers:  map[string]string{"x-info": "important"},
 			},
+			Callback{
+				Method:   "POST",
+				Target:   delayTestServer.URL,
+				Delay:    2,
+				Response: []byte(`{"wait":"there's more"}`),
+			},
 		},
 	}))
 
@@ -151,8 +164,11 @@ func TestClientCallbacks(t *testing.T) {
 	require.NoError(t, err)
 
 	// allow go routine to finish
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(1 * time.Second)
 	require.True(t, called, "callback was not hit")
+	require.False(t, delayCalled, "delayed callback should not be hit yet")
+	time.Sleep(2 * time.Second)
+	require.True(t, delayCalled, "delayed callback was not hit")
 }
 
 func TestClientClose(t *testing.T) {

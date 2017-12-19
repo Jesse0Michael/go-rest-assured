@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -99,6 +100,9 @@ func (c *Client) Given(calls ...Call) error {
 			}
 			callbackReq.Header.Set(AssuredCallbackTarget, callback.Target)
 			callbackReq.Header.Set(AssuredCallbackKey, callbackKey)
+			if callback.Delay > 0 {
+				callbackReq.Header.Set(AssuredCallbackDelay, strconv.Itoa(callback.Delay))
+			}
 			for key, value := range callback.Headers {
 				callbackReq.Header.Set(key, value)
 			}
