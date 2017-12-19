@@ -16,7 +16,7 @@ fmt:
 	find . -not -path "./vendor/*" -name '*.go' -type f | sed 's#\(.*\)/.*#\1#' | sort -u | xargs -n1 -I {} bash -c "cd {} && goimports -w *.go && gofmt -w -l -s *.go"
 test:
 	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
-	$(GO) test -v ./assured -race -cover -coverprofile=$(COVERAGEDIR)/assured.coverprofile
+	$(GO) test -v ./assured -cover -coverprofile=$(COVERAGEDIR)/assured.coverprofile
 cover:
 	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
 	$(GO) tool cover -html=$(COVERAGEDIR)/assured.coverprofile -o $(COVERAGEDIR)/assured.html

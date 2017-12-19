@@ -70,7 +70,7 @@ To use your assured calls hit the following endpoint with the Method/Path that w
 Or..
 
 ```go
-// Get the URL of the client ex: 'localhost:11011/when'
+// Get the URL of the client ex: 'http://localhost:11011/when'
 testServer := client.URL()
 ```
 
@@ -78,6 +78,32 @@ Go-Rest-Assured will return `404 NotFound` error response when a matching stub i
 
 As requests come in, the will be stored
 
+## Callbacks
+To include callbacks from Go-Rest-Assured when a stubbed endpoint is hit, create them by hitting the endpoint `/callbacks`
+To create a callbacks you must include the HTTP header `Assured-Callback-Target` with the specified endpoint you want your callbacks to be sent to
+You must also include the HTTP header `Assured-Callback-Key` with a key with the call to the `/callbacks` endpoint as well as the `/given/{path:.*}` endpoint that for the stubbed call you want the callback to be associated with
+You can also set a callback delay with the HTTP Header `Assured-Callback-Delay` with a number of seconds
+
+Or...
+
+```go
+call := assured.Call{
+  Path: "test/assured",
+  StatusCode: 201,
+  Method: "POST",
+  Response: []byte(`{"holler_back":true}`), 
+  Callbacks: []assured.Callback{
+    assured.Callback{
+      Method: "POST",
+      Target: "http://localhost:8080/hit/me",
+      Response: []byte(`holla!!`), 
+    },
+  },
+}
+// Stub out an assured call with callbacks
+client.Given(call)
+```
+*You cannot clear out an individual callback when using the assured.Client, but you can `ClearAll()`*
 
 ## Verifying
 To verify the calls made against your go-rest-assured service, use the endpoint `/verify/{path:.*}`
@@ -94,6 +120,7 @@ calls := client.Verify("GET", "test/assured")
 
 ## Clearing
 To clear out the stubbed and made calls for a specific Method/Path, use the endpoint `/clear/{path:.*}`
+ *Including the HTTP Header `Assured-Callback-Key` will clear all callbacks associated with that key (independent of path)*
 
 To clear out all stubbed calls on the server, use the endpoint `/clear`
 
