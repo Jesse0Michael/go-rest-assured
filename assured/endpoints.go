@@ -1,8 +1,12 @@
 package assured
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/go-kit/kit/endpoint"
 	kitlog "github.com/go-kit/kit/log"
@@ -11,14 +15,17 @@ import (
 // AssuredEndpoints
 type AssuredEndpoints struct {
 	logger         kitlog.Logger
+	httpClient     http.Client
 	assuredCalls   *CallStore
 	madeCalls      *CallStore
+	callbackCalls  *CallStore
 	trackMadeCalls bool
 }
 
 // Settings
 type Settings struct {
 	Logger         kitlog.Logger
+	HTTPClient     http.Client
 	Port           int
 	TrackMadeCalls bool
 }
@@ -28,7 +35,9 @@ func NewAssuredEndpoints(settings Settings) *AssuredEndpoints {
 	return &AssuredEndpoints{
 		assuredCalls:   NewCallStore(),
 		madeCalls:      NewCallStore(),
+		callbackCalls:  NewCallStore(),
 		logger:         settings.Logger,
+		httpClient:     settings.HTTPClient,
 		trackMadeCalls: settings.TrackMadeCalls,
 	}
 }
@@ -53,6 +62,14 @@ func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *Call) (inter
 	return call, nil
 }
 
+// GivenCallbackEndpoint is used to stub out callbacks for a callback key
+func (a *AssuredEndpoints) GivenCallbackEndpoint(ctx context.Context, call *Call) (interface{}, error) {
+	a.callbackCalls.AddAt(call.Headers[AssuredCallbackKey], call)
+	a.logger.Log("message", "assured callback set", "key", call.Headers[AssuredCallbackKey], "target", call.Headers[AssuredCallbackTarget])
+
+	return call, nil
+}
+
 // WhenEndpoint is used to test the assured calls
 func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	calls := a.assuredCalls.Get(call.ID())
@@ -66,6 +83,11 @@ func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interf
 	}
 	assured := calls[0]
 	a.assuredCalls.Rotate(assured)
+
+	// Trigger callbacks, if applicable
+	for _, callback := range a.callbackCalls.Get(assured.Headers[AssuredCallbackKey]) {
+		go a.sendCallback(callback.Headers[AssuredCallbackTarget], callback)
+	}
 
 	a.logger.Log("message", "assured call responded", "path", call.ID())
 	return assured, nil
@@ -84,6 +106,10 @@ func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (inter
 	a.assuredCalls.Clear(call.ID())
 	a.madeCalls.Clear(call.ID())
 	a.logger.Log("message", "cleared calls for path", "path", call.ID())
+	if call.Headers[AssuredCallbackKey] != "" {
+		a.callbackCalls.Clear(call.Headers[AssuredCallbackKey])
+		a.logger.Log("message", "cleared callbacks for key", "key", call.Headers[AssuredCallbackKey])
+	}
 
 	return nil, nil
 }
@@ -92,7 +118,32 @@ func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (inter
 func (a *AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
 	a.assuredCalls.ClearAll()
 	a.madeCalls.ClearAll()
+	a.callbackCalls.ClearAll()
 	a.logger.Log("message", "cleared all calls")
 
 	return nil, nil
+}
+
+//sendCallback sends a given callback to its target
+func (a *AssuredEndpoints) sendCallback(target string, call *Call) {
+	var delay int64
+	if delayOverride, err := strconv.ParseInt(call.Headers[AssuredCallbackDelay], 10, 64); err == nil {
+		delay = delayOverride
+	}
+	req, err := http.NewRequest(call.Method, target, bytes.NewBuffer(call.Response))
+	if err != nil {
+		a.logger.Log("message", "failed to build callback request", "target", target, "error", err.Error())
+		return
+	}
+	for key, value := range call.Headers {
+		req.Header.Set(key, value)
+	}
+	// Delay callback, if applicable
+	time.Sleep(time.Duration(delay) * time.Second)
+	resp, err := a.httpClient.Do(req)
+	if err != nil {
+		a.logger.Log("message", "failed to reach callback target", "target", target, "error", err.Error())
+		return
+	}
+	a.logger.Log("message", "sent callback to target", "target", target, "status_code", resp.StatusCode)
 }

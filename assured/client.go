@@ -8,9 +8,11 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
+	"github.com/pborman/uuid"
 )
 
 // Client
@@ -19,13 +21,14 @@ type Client struct {
 	Port       int
 	ctx        context.Context
 	cancel     context.CancelFunc
-	httpClient *http.Client
+	httpClient http.Client
 }
 
 // NewDefaultClient creates a new go-rest-assured client with default parameters
 func NewDefaultClient() *Client {
 	settings := Settings{
-		Logger: kitlog.NewLogfmtLogger(ioutil.Discard),
+		Logger:     kitlog.NewLogfmtLogger(ioutil.Discard),
+		HTTPClient: *http.DefaultClient,
 	}
 	return NewClient(nil, settings)
 }
@@ -47,7 +50,7 @@ func NewClient(root context.Context, settings Settings) *Client {
 		Port:       settings.Port,
 		ctx:        ctx,
 		cancel:     cancel,
-		httpClient: &http.Client{},
+		httpClient: settings.HTTPClient,
 	}
 	StartApplicationHTTPListener(c.ctx, c.Errc, settings)
 	return &c
@@ -66,9 +69,6 @@ func (c *Client) Close() {
 // Given stubs assured Call(s)
 func (c *Client) Given(calls ...Call) error {
 	for _, call := range calls {
-		var req *http.Request
-		var err error
-
 		if call.Method == "" {
 			return fmt.Errorf("cannot stub call without Method")
 		}
@@ -76,20 +76,49 @@ func (c *Client) Given(calls ...Call) error {
 		// Sanitize Path
 		call.Path = strings.Trim(call.Path, "/")
 
-		if call.Response == nil {
-			req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), nil)
-		} else {
-			req, err = http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), bytes.NewReader(call.Response))
-		}
+		req, err := http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), bytes.NewReader(call.Response))
 		if err != nil {
 			return err
 		}
 		if call.StatusCode != 0 {
-			req.Header.Set("Assured-Status", fmt.Sprintf("%d", call.StatusCode))
+			req.Header.Set(AssuredStatus, fmt.Sprintf("%d", call.StatusCode))
+		}
+		for key, value := range call.Headers {
+			req.Header.Set(key, value)
+		}
+
+		// Create callbacks
+		callbacks := make([]*http.Request, len(call.Callbacks))
+		callbackKey := uuid.New()
+		for i, callback := range call.Callbacks {
+			if callback.Target == "" {
+				return fmt.Errorf("cannot stub callback without target")
+			}
+			callbackReq, err := http.NewRequest(callback.Method, fmt.Sprintf("http://localhost:%d/callback", c.Port), bytes.NewReader(callback.Response))
+			if err != nil {
+				return err
+			}
+			callbackReq.Header.Set(AssuredCallbackTarget, callback.Target)
+			callbackReq.Header.Set(AssuredCallbackKey, callbackKey)
+			if callback.Delay > 0 {
+				callbackReq.Header.Set(AssuredCallbackDelay, strconv.Itoa(callback.Delay))
+			}
+			for key, value := range callback.Headers {
+				callbackReq.Header.Set(key, value)
+			}
+			callbacks[i] = callbackReq
+		}
+		if len(callbacks) > 0 {
+			req.Header.Set(AssuredCallbackKey, callbackKey)
 		}
 
 		if _, err = c.httpClient.Do(req); err != nil {
 			return err
+		}
+		for _, cReq := range callbacks {
+			if _, err = c.httpClient.Do(cReq); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

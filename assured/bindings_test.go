@@ -26,6 +26,21 @@ func TestApplicationRouterGivenBinding(t *testing.T) {
 	}
 }
 
+func TestApplicationRouterGivenCallbackBinding(t *testing.T) {
+	router := createApplicationRouter(ctx, testSettings)
+
+	for _, verb := range verbs {
+		req, err := http.NewRequest(verb, "/callback", nil)
+		req.Header.Set(AssuredCallbackKey, "call-key")
+		req.Header.Set(AssuredCallbackTarget, "http://faketarget.com/")
+		require.NoError(t, err)
+		resp := httptest.NewRecorder()
+		router.ServeHTTP(resp, req)
+		require.Equal(t, http.StatusCreated, resp.Code)
+		require.Equal(t, "*", resp.Header().Get("Access-Control-Allow-Origin"))
+	}
+}
+
 func TestApplicationRouterWhenBinding(t *testing.T) {
 	router := createApplicationRouter(ctx, testSettings)
 
@@ -202,6 +217,81 @@ func TestDecodeAssuredCallStatusFailure(t *testing.T) {
 	require.True(t, decoded, "decode method was not hit")
 }
 
+func TestDecodeAssuredCallback(t *testing.T) {
+	decoded := false
+	expected := &Call{
+		Method:     http.MethodPost,
+		StatusCode: http.StatusCreated,
+		Response:   []byte(`{"done": true}`),
+		Headers:    map[string]string{"Assured-Callback-Target": "http://faketarget.com/", "Assured-Callback-Key": "call-key"},
+	}
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCallback(ctx, req)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, c)
+		decoded = true
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/callback", bytes.NewBuffer([]byte(`{"done": true}`)))
+	require.NoError(t, err)
+	req.Header.Set(AssuredCallbackKey, "call-key")
+	req.Header.Set(AssuredCallbackTarget, "http://faketarget.com/")
+
+	router := mux.NewRouter()
+	router.HandleFunc("/callback", testDecode).Methods(http.MethodPost)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
+}
+
+func TestDecodeAssuredCallbackMissingKey(t *testing.T) {
+	decoded := false
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCallback(ctx, req)
+
+		require.Nil(t, c)
+		require.Error(t, err)
+		require.Equal(t, "'Assured-Callback-Key' header required for callback", err.Error())
+		decoded = true
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/callback", bytes.NewBuffer([]byte(`{"done": true}`)))
+	req.Header.Set(AssuredCallbackTarget, "http://faketarget.com/")
+	require.NoError(t, err)
+
+	router := mux.NewRouter()
+	router.HandleFunc("/callback", testDecode).Methods(http.MethodPost)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
+}
+
+func TestDecodeAssuredCallbackMissingTarget(t *testing.T) {
+	decoded := false
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCallback(ctx, req)
+
+		require.Nil(t, c)
+		require.Error(t, err)
+		require.Equal(t, "'Assured-Callback-Target' header required for callback", err.Error())
+		decoded = true
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/callback", bytes.NewBuffer([]byte(`{"done": true}`)))
+	req.Header.Set(AssuredCallbackKey, "call-key")
+	require.NoError(t, err)
+
+	router := mux.NewRouter()
+	router.HandleFunc("/callback", testDecode).Methods(http.MethodPost)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
+}
+
 func TestEncodeAssuredCall(t *testing.T) {
 	call := &Call{
 		Path:       "/test/assured",
@@ -227,7 +317,7 @@ func TestEncodeAssuredCalls(t *testing.T) {
 	resp := httptest.NewRecorder()
 	expected, err := ioutil.ReadFile("../testdata/calls.json")
 	require.NoError(t, err)
-	err = encodeAssuredCall(ctx, resp, []*Call{call1, call2, call3})
+	err = encodeAssuredCall(ctx, resp, []*Call{testCall1(), testCall2(), testCall3()})
 
 	require.NoError(t, err)
 	require.Equal(t, "application/json", resp.HeaderMap.Get("Content-Type"))
@@ -247,34 +337,52 @@ var (
 		http.MethodConnect,
 		http.MethodOptions,
 	}
-	call1 = &Call{
+	testSettings = Settings{
+		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		HTTPClient:     *http.DefaultClient,
+		TrackMadeCalls: true,
+	}
+	fullAssuredCalls = &CallStore{
+		data: map[string][]*Call{
+			"GET:test/assured":    {testCall1(), testCall2()},
+			"POST:teapot/assured": {testCall3()},
+		},
+	}
+)
+
+func testCall1() *Call {
+	return &Call{
 		Path:       "test/assured",
 		Method:     "GET",
 		StatusCode: http.StatusOK,
 		Response:   []byte(`{"assured": true}`),
 		Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
-	call2 = &Call{
+}
+
+func testCall2() *Call {
+	return &Call{
 		Path:       "test/assured",
 		Method:     "GET",
 		StatusCode: http.StatusConflict,
 		Response:   []byte("error"),
 		Headers:    map[string]string{"Content-Length": "5", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
-	call3 = &Call{
+}
+
+func testCall3() *Call {
+	return &Call{
 		Path:       "teapot/assured",
 		Method:     "POST",
 		StatusCode: http.StatusTeapot,
 		Headers:    map[string]string{"Content-Length": "0", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
-	fullAssuredCalls = &CallStore{
-		data: map[string][]*Call{
-			"GET:test/assured":    {call1, call2},
-			"POST:teapot/assured": {call3},
-		},
+}
+
+func testCallback() *Call {
+	return &Call{
+		Response: []byte(`{"done": true}`),
+		Method:   "POST",
+		Headers:  map[string]string{"Assured-Callback-Key": "call-key", "Assured-Callback-Target": "http://faketarget.com/"},
 	}
-	testSettings = Settings{
-		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
-		TrackMadeCalls: true,
-	}
-)
+}

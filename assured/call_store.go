@@ -19,6 +19,12 @@ func (c *CallStore) Add(call *Call) {
 	c.Unlock()
 }
 
+func (c *CallStore) AddAt(key string, call *Call) {
+	c.Lock()
+	c.data[key] = append(c.data[key], call)
+	c.Unlock()
+}
+
 func (c *CallStore) Rotate(call *Call) {
 	c.Lock()
 	c.data[call.ID()] = append(c.data[call.ID()][1:], call)

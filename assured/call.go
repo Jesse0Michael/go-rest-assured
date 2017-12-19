@@ -11,6 +11,7 @@ type Call struct {
 	StatusCode int               `json:"status_code"`
 	Headers    map[string]string `json:"headers"`
 	Response   []byte            `json:"response,omitempty"`
+	Callbacks  []Callback        `json:"callbacks,omitempty"`
 }
 
 // ID is used as a key when managing stubbed and made calls
@@ -24,4 +25,13 @@ func (c Call) String() string {
 
 	// TODO: implement string replacements for special cases
 	return rawString
+}
+
+// Callback is a structure containing a callback that is stubbed
+type Callback struct {
+	Target   string            `json:"target"`
+	Method   string            `json:"method"`
+	Delay    int               `json:"delay,omitempty"`
+	Headers  map[string]string `json:"headers"`
+	Response []byte            `json:"response,omitempty"`
 }

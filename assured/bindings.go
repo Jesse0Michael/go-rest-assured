@@ -15,6 +15,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	AssuredStatus         = "Assured-Status"
+	AssuredCallbackKey    = "Assured-Callback-Key"
+	AssuredCallbackTarget = "Assured-Callback-Target"
+	AssuredCallbackDelay  = "Assured-Callback-Delay"
+)
+
 // StartApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
 func StartApplicationHTTPListener(root context.Context, errc chan error, settings Settings) {
 	go func() {
@@ -57,6 +64,16 @@ func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router
 		kithttp.NewServer(
 			e.WrappedEndpoint(e.GivenEndpoint),
 			decodeAssuredCall,
+			encodeAssuredCall,
+			kithttp.ServerErrorLogger(settings.Logger),
+			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
+	).Methods(assuredMethods...)
+
+	router.Handle(
+		"/callback",
+		kithttp.NewServer(
+			e.WrappedEndpoint(e.GivenCallbackEndpoint),
+			decodeAssuredCallback,
 			encodeAssuredCall,
 			kithttp.ServerErrorLogger(settings.Logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
@@ -115,8 +132,41 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 	}
 
 	// Set status code override
-	if statusCode, err := strconv.ParseInt(req.Header.Get("Assured-Status"), 10, 64); err == nil {
+	if statusCode, err := strconv.ParseInt(req.Header.Get(AssuredStatus), 10, 64); err == nil {
 		ac.StatusCode = int(statusCode)
+	}
+
+	// Set headers
+	headers := map[string]string{}
+	for key, value := range req.Header {
+		headers[key] = value[0]
+	}
+	ac.Headers = headers
+
+	// Set response body
+	if req.Body != nil {
+		defer req.Body.Close()
+		if bytes, err := ioutil.ReadAll(req.Body); err == nil {
+			ac.Response = bytes
+		}
+	}
+
+	return &ac, nil
+}
+
+// decodeAssuredCallback converts an http request into an assured Callback object
+func decodeAssuredCallback(ctx context.Context, req *http.Request) (interface{}, error) {
+	ac := Call{
+		Method:     req.Method,
+		StatusCode: http.StatusCreated,
+	}
+
+	// Require headers
+	if len(req.Header[AssuredCallbackKey]) == 0 {
+		return nil, fmt.Errorf("'%s' header required for callback", AssuredCallbackKey)
+	}
+	if len(req.Header[AssuredCallbackTarget]) == 0 {
+		return nil, fmt.Errorf("'%s' header required for callback", AssuredCallbackTarget)
 	}
 
 	// Set headers
@@ -143,7 +193,7 @@ func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}
 	case *Call:
 		w.WriteHeader(resp.StatusCode)
 		for key, value := range resp.Headers {
-			if !strings.HasPrefix(key, "Assured") {
+			if !strings.HasPrefix(key, "Assured-") {
 				w.Header().Set(key, value)
 			}
 		}

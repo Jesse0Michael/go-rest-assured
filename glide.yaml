@@ -11,3 +11,4 @@ import:
   - log
   - transport/http
   - endpoint
+- package: github.com/pborman/uuid

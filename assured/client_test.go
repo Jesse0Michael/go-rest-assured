@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/require"
@@ -22,15 +23,16 @@ func TestClient(t *testing.T) {
 		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
 		Port:           9091,
 		TrackMadeCalls: true,
+		HTTPClient:     *httpClient,
 	}
 	client := NewClient(ctx, settings)
 
 	url := client.URL()
 	require.Equal(t, "http://localhost:9091/when", url)
 
-	require.NoError(t, client.Given(*call1))
-	require.NoError(t, client.Given(*call2))
-	require.NoError(t, client.Given(*call3))
+	require.NoError(t, client.Given(*testCall1()))
+	require.NoError(t, client.Given(*testCall2()))
+	require.NoError(t, client.Given(*testCall3()))
 
 	req, err := http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
 	require.NoError(t, err)
@@ -117,23 +119,75 @@ func TestClient(t *testing.T) {
 	require.Nil(t, calls)
 }
 
+func TestClientCallbacks(t *testing.T) {
+	httpClient := http.Client{}
+	called := false
+	delayCalled := false
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadAll(r.Body)
+		require.NoError(t, err)
+		require.Equal(t, []byte(`{"done":"here"}`), body)
+		require.NotEmpty(t, r.Header.Get("x-info"))
+		called = true
+	}))
+	delayTestServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadAll(r.Body)
+		require.NoError(t, err)
+		require.Equal(t, []byte(`{"wait":"there's more"}`), body)
+		delayCalled = true
+	}))
+	client := NewDefaultClient()
+
+	require.NoError(t, client.Given(Call{
+		Path:   "test/assured",
+		Method: "POST",
+		Callbacks: []Callback{
+			Callback{
+				Method:   "POST",
+				Target:   testServer.URL,
+				Response: []byte(`{"done":"here"}`),
+				Headers:  map[string]string{"x-info": "important"},
+			},
+			Callback{
+				Method:   "POST",
+				Target:   delayTestServer.URL,
+				Delay:    2,
+				Response: []byte(`{"wait":"there's more"}`),
+			},
+		},
+	}))
+
+	req, err := http.NewRequest(http.MethodPost, client.URL()+"/test/assured", bytes.NewReader([]byte(`{"calling":"here"}`)))
+	require.NoError(t, err)
+
+	_, err = httpClient.Do(req)
+	require.NoError(t, err)
+
+	// allow go routine to finish
+	time.Sleep(1 * time.Second)
+	require.True(t, called, "callback was not hit")
+	require.False(t, delayCalled, "delayed callback should not be hit yet")
+	time.Sleep(2 * time.Second)
+	require.True(t, delayCalled, "delayed callback was not hit")
+}
+
 func TestClientClose(t *testing.T) {
 	client := NewDefaultClient()
 	client2 := NewDefaultClient()
 
 	require.NotEqual(t, client.URL(), client2.URL())
 
-	require.NoError(t, client.Given(*call1))
-	require.NoError(t, client2.Given(*call1))
+	require.NoError(t, client.Given(*testCall1()))
+	require.NoError(t, client2.Given(*testCall1()))
 
 	client.Close()
-	err := client.Given(*call1)
+	err := client.Given(*testCall1())
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `connection refused`)
 
 	client2.Close()
-	err = client2.Given(*call1)
+	err = client2.Given(*testCall1())
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `connection refused`)
@@ -146,6 +200,36 @@ func TestClientGivenMethodFailure(t *testing.T) {
 
 	require.Error(t, err)
 	require.Equal(t, "cannot stub call without Method", err.Error())
+}
+
+func TestClientGivenCallbackMissingTarget(t *testing.T) {
+	call := Call{
+		Method: "POST",
+		Callbacks: []Callback{
+			Callback{Method: "POST"},
+		},
+	}
+	client := NewDefaultClient()
+
+	err := client.Given(call)
+
+	require.Error(t, err)
+	require.Equal(t, "cannot stub callback without target", err.Error())
+}
+
+func TestClientGivenCallbackBadMethod(t *testing.T) {
+	call := Call{
+		Method: "POST",
+		Callbacks: []Callback{
+			Callback{Method: "\"", Target: "http://localhost/"},
+		},
+	}
+	client := NewDefaultClient()
+
+	err := client.Given(call)
+
+	require.Error(t, err)
+	require.Equal(t, "net/http: invalid method \"\\\"\"", err.Error())
 }
 
 func TestClientBadRequestFailure(t *testing.T) {
