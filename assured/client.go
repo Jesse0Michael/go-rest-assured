@@ -27,8 +27,9 @@ type Client struct {
 // NewDefaultClient creates a new go-rest-assured client with default parameters
 func NewDefaultClient() *Client {
 	settings := Settings{
-		Logger:     kitlog.NewLogfmtLogger(ioutil.Discard),
-		HTTPClient: *http.DefaultClient,
+		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		HTTPClient:     *http.DefaultClient,
+		TrackMadeCalls: true,
 	}
 	return NewClient(nil, settings)
 }
