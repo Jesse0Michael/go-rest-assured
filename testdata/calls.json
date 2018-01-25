@@ -3,7 +3,7 @@
     "path": "test/assured",
 		"method": "GET",
     "status_code": 200,
-    "response": "eyJhc3N1cmVkIjogdHJ1ZX0=",
+    "response": "{\"assured\": true}",
     "headers": {
       "Content-Length": "17", 
       "User-Agent": "Go-http-client/1.1", 
@@ -14,7 +14,7 @@
     "path": "test/assured",
 		"method": "GET",
     "status_code": 409,
-    "response": "ZXJyb3I=",
+    "response": "error",
     "headers": {
       "Content-Length": "5", 
       "User-Agent": "Go-http-client/1.1", 
