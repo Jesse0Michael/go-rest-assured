@@ -8,6 +8,7 @@ Go-Rest-Assured keeps track of the Assured Calls you have stubbed out and the Ca
 - Method
 - Response
 - Headers
+- Query
 - Callbacks
 
 Set these fields as a *Given* call through the client or a HTTP request to the service  directly and they will be returned from the Go Rest Assured API when you hit the *When* endpoint. The Calls you stub out are uniquely mapped with an identity of their Method and Path. If you stub multiple calls to the same Method and Path, the responses will cycle through your stubs based on the order they were created.
