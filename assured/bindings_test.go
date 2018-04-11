@@ -114,6 +114,7 @@ func TestDecodeAssuredCall(t *testing.T) {
 		Method:     http.MethodPost,
 		Response:   []byte(`{"assured": true}`),
 		Headers:    map[string]string{},
+		Query:      map[string]string{"assured": "max"},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -123,7 +124,7 @@ func TestDecodeAssuredCall(t *testing.T) {
 		decoded = true
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "/verify/test/assured?test=positive", bytes.NewBuffer([]byte(`{"assured": true}`)))
+	req, err := http.NewRequest(http.MethodPost, "/verify/test/assured?assured=max", bytes.NewBuffer([]byte(`{"assured": true}`)))
 	require.NoError(t, err)
 
 	router := mux.NewRouter()
@@ -141,6 +142,7 @@ func TestDecodeAssuredCallNilBody(t *testing.T) {
 		StatusCode: http.StatusOK,
 		Method:     http.MethodDelete,
 		Headers:    map[string]string{},
+		Query:      map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -168,6 +170,7 @@ func TestDecodeAssuredCallStatus(t *testing.T) {
 		StatusCode: http.StatusForbidden,
 		Method:     http.MethodGet,
 		Headers:    map[string]string{"Assured-Status": "403"},
+		Query:      map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -196,6 +199,7 @@ func TestDecodeAssuredCallStatusFailure(t *testing.T) {
 		StatusCode: http.StatusOK,
 		Method:     http.MethodGet,
 		Headers:    map[string]string{"Assured-Status": "four oh three"},
+		Query:      map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
 		c, err := decodeAssuredCall(ctx, req)
@@ -233,7 +237,7 @@ func TestDecodeAssuredCallback(t *testing.T) {
 		decoded = true
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "/callback", bytes.NewBuffer([]byte(`{"done": true}`)))
+	req, err := http.NewRequest(http.MethodPost, "/callback?assured=max", bytes.NewBuffer([]byte(`{"done": true}`)))
 	require.NoError(t, err)
 	req.Header.Set(AssuredCallbackKey, "call-key")
 	req.Header.Set(AssuredCallbackTarget, "http://faketarget.com/")
@@ -357,6 +361,7 @@ func testCall1() *Call {
 		StatusCode: http.StatusOK,
 		Response:   []byte(`{"assured": true}`),
 		Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
+		Query:      map[string]string{"assured": "max"},
 	}
 }
 
