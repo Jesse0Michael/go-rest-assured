@@ -143,6 +143,13 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 	}
 	ac.Headers = headers
 
+	// Set query
+	query := map[string]string{}
+	for key, value := range req.URL.Query() {
+		query[key] = value[0]
+	}
+	ac.Query = query
+
 	// Set response body
 	if req.Body != nil {
 		defer req.Body.Close()

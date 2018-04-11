@@ -15,6 +15,7 @@ type Call struct {
 	Method     string            `json:"method"`
 	StatusCode int               `json:"status_code"`
 	Headers    map[string]string `json:"headers"`
+	Query      map[string]string `json:"query,omitempty"`
 	Response   CallResponse      `json:"response,omitempty"`
 	Callbacks  []Callback        `json:"callbacks,omitempty"`
 }

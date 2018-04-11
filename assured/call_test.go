@@ -71,6 +71,7 @@ func TestCallUnmarshalJSON(t *testing.T) {
 		"method": "GET", 
 		"status_code": 200, 
 		"headers": {"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}, 
+		"query": {"assured": "max"}, 
 		"response": "{\"assured\": true}"
 	}`
 
@@ -86,6 +87,7 @@ func TestCallUnmarshalBytes(t *testing.T) {
 		"method": "GET", 
 		"status_code": 200, 
 		"headers": {"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}, 
+		"query": {"assured": "max"}, 
 		"response": "eyJhc3N1cmVkIjogdHJ1ZX0="
 	}`
 
@@ -101,6 +103,7 @@ func TestCallUnmarshalFile(t *testing.T) {
 		"method": "GET", 
 		"status_code": 200, 
 		"headers": {"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}, 
+		"query": {"assured": "max"}, 
 		"response": "../testdata/assured.json"
 	}`
 
@@ -115,11 +118,12 @@ func TestCallUnmarshalCallbacks(t *testing.T) {
 		"path": "test/assured", 
 		"method": "GET", 
 		"status_code": 200, 
-		"headers": {"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}, 
+		"headers": {"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
+		"query": {"assured": "max"}, 
 		"response": "../testdata/assured.json",
 		"callbacks": [
 			{
-				"target": "http://faketarget.com/
+				"target": "http://faketarget.com/",
 				"method": "POST", 
 				"response": "{\"done\": true}", 
 				"headers": {"Assured-Callback-Key": "call-key", "Assured-Callback-Target": "http://faketarget.com/"}}

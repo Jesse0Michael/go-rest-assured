@@ -1,8 +1,8 @@
 hash: 1af75dc38c3120e8bafb8f1327ca56dc1d454eb23711d502bf23b9a14523e0e5
-updated: 2017-12-12T09:53:53.36472955-07:00
+updated: 2018-04-10T20:11:59.940059503-07:00
 imports:
 - name: github.com/go-kit/kit
-  version: 0d313fb5fb3a94d87d61e6434785264e87a5d740
+  version: feff11c789717b48706f30d9df3ee315e5d6ea51
   subpackages:
   - endpoint
   - log
@@ -10,25 +10,25 @@ imports:
 - name: github.com/go-logfmt/logfmt
   version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-stack/stack
-  version: 7a2f19628aabfe68f0766b59e74d6315f8347d22
+  version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/gorilla/context
-  version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/handlers
   version: 90663712d74cb411cbef281bc1e08c19d1a76145
 - name: github.com/gorilla/mux
-  version: 3f19343c7d9ce75569b952758bd236af94956061
+  version: c0091a029979286890368b4c7b301261e448e242
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/stretchr/testify
-  version: 890a5c3458b43e6104ff5da8dfa139d013d77544
+  version: b89eecf5ca5db6d3ba60b237ffe3df7bafb7662f
   subpackages:
   - assert
   - require
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
