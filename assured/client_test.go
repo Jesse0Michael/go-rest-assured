@@ -141,6 +141,7 @@ func TestClientCallbacks(t *testing.T) {
 	require.NoError(t, client.Given(Call{
 		Path:   "test/assured",
 		Method: "POST",
+		Delay:  2,
 		Callbacks: []Callback{
 			Callback{
 				Method:   "POST",
@@ -151,7 +152,7 @@ func TestClientCallbacks(t *testing.T) {
 			Callback{
 				Method:   "POST",
 				Target:   delayTestServer.URL,
-				Delay:    2,
+				Delay:    4,
 				Response: []byte(`{"wait":"there's more"}`),
 			},
 		},
@@ -160,9 +161,11 @@ func TestClientCallbacks(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, client.URL()+"/test/assured", bytes.NewReader([]byte(`{"calling":"here"}`)))
 	require.NoError(t, err)
 
+	start := time.Now()
 	_, err = httpClient.Do(req)
 	require.NoError(t, err)
 
+	require.True(t, time.Since(start) >= 2*time.Second, "response should be delayed 2 seconds")
 	// allow go routine to finish
 	time.Sleep(1 * time.Second)
 	require.True(t, called, "callback was not hit")

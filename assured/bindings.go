@@ -17,6 +17,7 @@ import (
 
 const (
 	AssuredStatus         = "Assured-Status"
+	AssuredDelay          = "Assured-Delay"
 	AssuredCallbackKey    = "Assured-Callback-Key"
 	AssuredCallbackTarget = "Assured-Callback-Target"
 	AssuredCallbackDelay  = "Assured-Callback-Delay"

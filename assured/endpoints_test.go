@@ -214,16 +214,17 @@ func TestWhenEndpointSuccessCallbacks(t *testing.T) {
 	require.True(t, called, "callback was not hit")
 }
 
-func TestWhenEndpointSuccessCallbacksDelayed(t *testing.T) {
+func TestWhenEndpointSuccessDelayed(t *testing.T) {
 	called := false
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		called = true
 	}))
 	assured := testCall1()
 	assured.Headers[AssuredCallbackKey] = "call-key"
+	assured.Headers[AssuredDelay] = "2"
 	call := testCallback()
 	call.Headers[AssuredCallbackTarget] = testServer.URL
-	call.Headers[AssuredCallbackDelay] = "2"
+	call.Headers[AssuredCallbackDelay] = "4"
 	endpoints := &AssuredEndpoints{
 		logger: testSettings.Logger,
 		assuredCalls: &CallStore{
@@ -235,9 +236,10 @@ func TestWhenEndpointSuccessCallbacksDelayed(t *testing.T) {
 		},
 		trackMadeCalls: true,
 	}
-
+	start := time.Now()
 	c, err := endpoints.WhenEndpoint(ctx, assured)
 
+	require.True(t, time.Since(start) >= 2*time.Second, "response should be delayed 2 seconds")
 	require.NoError(t, err)
 	require.Equal(t, assured, c)
 	// allow go routine to finish

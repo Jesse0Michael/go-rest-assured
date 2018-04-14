@@ -82,7 +82,10 @@ func (c *Client) Given(calls ...Call) error {
 			return err
 		}
 		if call.StatusCode != 0 {
-			req.Header.Set(AssuredStatus, fmt.Sprintf("%d", call.StatusCode))
+			req.Header.Set(AssuredStatus, strconv.Itoa(call.StatusCode))
+		}
+		if call.Delay > 0 {
+			req.Header.Set(AssuredDelay, strconv.Itoa(call.Delay))
 		}
 		for key, value := range call.Headers {
 			req.Header.Set(key, value)

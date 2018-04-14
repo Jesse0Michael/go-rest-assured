@@ -89,6 +89,11 @@ func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interf
 		go a.sendCallback(callback.Headers[AssuredCallbackTarget], callback)
 	}
 
+	// Delay response
+	if delay, err := strconv.ParseInt(assured.Headers[AssuredDelay], 10, 64); err == nil {
+		time.Sleep(time.Duration(delay) * time.Second)
+	}
+
 	a.logger.Log("message", "assured call responded", "path", call.ID())
 	return assured, nil
 }
