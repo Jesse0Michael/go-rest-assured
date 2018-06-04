@@ -199,12 +199,12 @@ func decodeAssuredCallback(ctx context.Context, req *http.Request) (interface{},
 func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}) error {
 	switch resp := i.(type) {
 	case *Call:
-		w.WriteHeader(resp.StatusCode)
 		for key, value := range resp.Headers {
 			if !strings.HasPrefix(key, "Assured-") {
 				w.Header().Set(key, value)
 			}
 		}
+		w.WriteHeader(resp.StatusCode)
 		w.Write([]byte(resp.String()))
 	case []*Call:
 		w.Header().Set("Content-Type", "application/json")
