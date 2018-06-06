@@ -19,8 +19,10 @@ If loading callbacks from a JSON file, the call unmarshaller will attempt to rea
 ## Running
 
 ### Standalone 
+Please have [GO](https://golang.org/) and [Glide](https://github.com/Masterminds/glide) installed on your machine
 
 1. `go get github.com/jesse0michael/go-rest-assured`
+2. `make install-deps`
 2. `make build`
 3. `bin/go-rest-assured`
 

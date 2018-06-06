@@ -70,8 +70,9 @@ func (c *Client) Close() {
 // Given stubs assured Call(s)
 func (c *Client) Given(calls ...Call) error {
 	for _, call := range calls {
+		// Default method to GET
 		if call.Method == "" {
-			return fmt.Errorf("cannot stub call without Method")
+			call.Method = http.MethodGet
 		}
 
 		// Sanitize Path
