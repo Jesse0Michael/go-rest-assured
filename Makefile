@@ -20,6 +20,10 @@ test:
 cover:
 	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
 	$(GO) tool cover -html=$(COVERAGEDIR)/assured.coverprofile -o $(COVERAGEDIR)/assured.html
+coveralls:
+	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
+	gover $(COVERAGEDIR) $(COVERAGEDIR)/coveralls.coverprofile
+	goveralls -coverprofile=$(COVERAGEDIR)/coveralls.coverprofile  -service=circle-ci -repotoken=$(COVERALLS_TOKEN)
 assert-no-diff:
 	test -z "$(shell git status --porcelain)"
 clean:

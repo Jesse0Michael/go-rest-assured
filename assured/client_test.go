@@ -196,13 +196,19 @@ func TestClientClose(t *testing.T) {
 	require.Contains(t, err.Error(), `connection refused`)
 }
 
-func TestClientGivenMethodFailure(t *testing.T) {
+func TestClientGivenNoMethod(t *testing.T) {
+	httpClient := http.Client{}
 	client := NewDefaultClient()
 
 	err := client.Given(Call{Path: "NoMethodMan"})
+	require.NoError(t, err)
 
-	require.Error(t, err)
-	require.Equal(t, "cannot stub call without Method", err.Error())
+	req, err := http.NewRequest(http.MethodGet, client.URL()+"/NoMethodMan", nil)
+	require.NoError(t, err)
+
+	resp, err := httpClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
 func TestClientGivenCallbackMissingTarget(t *testing.T) {
