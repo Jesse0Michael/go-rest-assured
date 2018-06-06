@@ -1,5 +1,6 @@
 # GO REST ASSURED
 [![CircleCI](https://circleci.com/gh/Jesse0Michael/go-rest-assured.svg?style=svg&circle-token=afd5de8a46297d388679dcfc404d4bcc4eceab7a)](https://circleci.com/gh/Jesse0Michael/go-rest-assured) [![Coverage Status](https://coveralls.io/repos/github/Jesse0Michael/go-rest-assured/badge.svg?branch=master)](https://coveralls.io/github/Jesse0Michael/go-rest-assured?branch=master)
+
 Go Rest Assured is a small service written in GO intended to be used to mock out REST API applications for testing. The concept is based on the [Rest Assured](http://rest-assured.io/) service written in Java and [other languages](https://github.com/artemave/REST-assured)
 
 Go-Rest-Assured keeps track of the Assured Calls you have stubbed out and the Calls that have been made against the service with the following fields:
