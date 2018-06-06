@@ -7,15 +7,15 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install Dependencies
-        command: |
-          go get -u -v -t github.com/Masterminds/glide
-          go get -v golang.org/x/tools/cmd/cover
-          go get -v github.com/mattn/goveralls
-          go get -v github.com/modocache/gover
-          make install-deps
+          name: Install Dependencies
+          command: |
+            go get -u -v -t github.com/Masterminds/glide
+            go get -v golang.org/x/tools/cmd/cover
+            go get -v github.com/mattn/goveralls
+            go get -v github.com/modocache/gover
+            make install-deps
       - run:
-        name: Build & Test
-        command: |
-          make all
-          make coveralls
+          name: Build & Test
+          command: |
+            make all
+            make coveralls
