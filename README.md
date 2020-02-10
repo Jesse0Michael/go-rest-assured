@@ -149,6 +149,6 @@ Or..
 // Clears calls for a Method and Path
 client.Clear("GET", "test/assured")
 
-// Crears all calls
+// Clears all calls
 client.ClearAll()
 ```
