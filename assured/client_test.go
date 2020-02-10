@@ -269,7 +269,7 @@ func TestClientBadRequestFailure(t *testing.T) {
 	err = client.ClearAll()
 
 	require.Error(t, err)
-	require.Equal(t, `Delete http://localhost:-1/clear: invalid URL port "-1"`, err.Error())
+	require.Equal(t, `parse http://localhost:-1/clear: invalid port ":-1" after host`, err.Error())
 }
 
 func TestClientVerifyHttpClientFailure(t *testing.T) {
