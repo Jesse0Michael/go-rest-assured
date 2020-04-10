@@ -1,3 +1,13 @@
+# [1.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v1.0.1...v1.1.0) (2020-04-10)
+
+### Bug Fixes
+
+- update test package ([122d28f](https://github.com/Jesse0Michael/go-rest-assured/commit/122d28fd1ba47b808e220506479bcbbe6710ad53))
+
+### Features
+
+- reorgonize pkg and cmd directories ([2c00b9a](https://github.com/Jesse0Michael/go-rest-assured/commit/2c00b9af16367919513556a2328b0cacebb396ac))
+
 ## [1.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v1.0.0...v1.0.1) (2020-04-10)
 
 ### Chores
