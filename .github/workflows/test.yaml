@@ -1,0 +1,25 @@
+name: Test Workflow
+on:
+  push:
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    container: golang:1.14-alpine
+    env:
+      CGO_ENABLED: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Test
+        run: |
+          go mod download
+          mkdir .coverage 
+          go test -v ./assured -cover -coverprofile=.coverage/assured.coverprofile
+
+      - name: Coveralls
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: .coverage/assured.coverprofile
