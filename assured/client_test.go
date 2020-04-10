@@ -26,10 +26,10 @@ func TestClient(t *testing.T) {
 		HTTPClient:     *httpClient,
 	}
 	client := NewClient(ctx, settings)
+	time.Sleep(time.Second)
 
 	url := client.URL()
 	require.Equal(t, "http://localhost:9091/when", url)
-
 	require.NoError(t, client.Given(*testCall1()))
 	require.NoError(t, client.Given(*testCall2()))
 	require.NoError(t, client.Given(*testCall3()))
@@ -137,6 +137,7 @@ func TestClientCallbacks(t *testing.T) {
 		delayCalled = true
 	}))
 	client := NewDefaultClient()
+	time.Sleep(time.Second)
 
 	require.NoError(t, client.Given(Call{
 		Path:   "test/assured",
@@ -177,6 +178,7 @@ func TestClientCallbacks(t *testing.T) {
 func TestClientClose(t *testing.T) {
 	client := NewDefaultClient()
 	client2 := NewDefaultClient()
+	time.Sleep(time.Second)
 
 	require.NotEqual(t, client.URL(), client2.URL())
 
@@ -184,12 +186,14 @@ func TestClientClose(t *testing.T) {
 	require.NoError(t, client2.Given(*testCall1()))
 
 	client.Close()
+	time.Sleep(time.Second)
 	err := client.Given(*testCall1())
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `connection refused`)
 
 	client2.Close()
+	time.Sleep(time.Second)
 	err = client2.Given(*testCall1())
 
 	require.Error(t, err)
@@ -199,6 +203,7 @@ func TestClientClose(t *testing.T) {
 func TestClientGivenNoMethod(t *testing.T) {
 	httpClient := http.Client{}
 	client := NewDefaultClient()
+	time.Sleep(time.Second)
 
 	err := client.Given(Call{Path: "NoMethodMan"})
 	require.NoError(t, err)
@@ -269,7 +274,7 @@ func TestClientBadRequestFailure(t *testing.T) {
 	err = client.ClearAll()
 
 	require.Error(t, err)
-	require.Equal(t, `parse http://localhost:-1/clear: invalid port ":-1" after host`, err.Error())
+	require.Equal(t, `parse "http://localhost:-1/clear": invalid port ":-1" after host`, err.Error())
 }
 
 func TestClientVerifyHttpClientFailure(t *testing.T) {
@@ -323,6 +328,7 @@ func TestClientVerifyBodyFailure(t *testing.T) {
 func TestClientPathSanitization(t *testing.T) {
 	httpClient := &http.Client{}
 	client := NewDefaultClient()
+	time.Sleep(time.Second)
 
 	require.NoError(t, client.Given(Call{Method: "GET", Path: "///yoyo/path///", StatusCode: http.StatusAccepted}))
 

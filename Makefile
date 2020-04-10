@@ -1,31 +1,25 @@
-GO ?= go
-COVERAGEDIR = coverage
-ifdef CIRCLE_ARTIFACTS
-	COVERAGEDIR=$(CIRCLE_ARTIFACTS)/coverage
-endif
-
+COVERAGEDIR = .coverage
 LDFLAGS = -ldflags '-X main.gitSHA=$(shell git rev-parse HEAD)'
 
 all: build test cover
+dependencies: 
+	go mod download
 build:
 	if [ ! -d bin ]; then mkdir bin; fi
-	$(GO) build $(LDFLAGS) -v -o bin/go-rest-assured
+	go build $(LDFLAGS) -v -o bin/go-rest-assured
 fmt:
+	go mod tidy
 	gofmt -w -l -s *.go
-test:
-	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
-	$(GO) test -v ./assured -cover -coverprofile=$(COVERAGEDIR)/assured.coverprofile
-cover:
-	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
-	$(GO) tool cover -html=$(COVERAGEDIR)/assured.coverprofile -o $(COVERAGEDIR)/assured.html
-coveralls:
-	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
-	gover $(COVERAGEDIR) $(COVERAGEDIR)/coveralls.coverprofile
-	goveralls -coverprofile=$(COVERAGEDIR)/coveralls.coverprofile  -service=circle-ci -repotoken=$(COVERALLS_TOKEN)
 assert-no-diff:
 	test -z "$(shell git status --porcelain)"
+test:
+	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
+	go test -v ./assured -cover -coverprofile=$(COVERAGEDIR)/assured.coverprofile
+cover:
+	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
+	go tool cover -html=$(COVERAGEDIR)/assured.coverprofile
 clean:
-	$(GO) clean
+	go clean
 	rm -f bin/go-rest-assured
-	rm -rf coverage/
+	rm -rf $(COVERAGEDIR)
 	rm -rf vendor/
