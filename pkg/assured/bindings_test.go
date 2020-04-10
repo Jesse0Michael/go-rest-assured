@@ -319,7 +319,7 @@ func TestEncodeAssuredCall(t *testing.T) {
 
 func TestEncodeAssuredCalls(t *testing.T) {
 	resp := httptest.NewRecorder()
-	expected, err := ioutil.ReadFile("../testdata/calls.json")
+	expected, err := ioutil.ReadFile("testdata/calls.json")
 	require.NoError(t, err)
 	err = encodeAssuredCall(ctx, resp, []*Call{testCall1(), testCall2(), testCall3()})
 

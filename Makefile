@@ -14,7 +14,7 @@ assert-no-diff:
 	test -z "$(shell git status --porcelain)"
 test:
 	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
-	go test -v ./assured -cover -coverprofile=$(COVERAGEDIR)/assured.coverprofile
+	go test -v ./pkg/... -cover -coverprofile=$(COVERAGEDIR)/assured.coverprofile
 cover:
 	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
 	go tool cover -html=$(COVERAGEDIR)/assured.coverprofile
