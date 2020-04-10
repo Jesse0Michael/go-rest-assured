@@ -1,3 +1,13 @@
+## [1.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v1.0.0...v1.0.1) (2020-04-10)
+
+### Chores
+
+- remove releaserc ([8d2b70b](https://github.com/Jesse0Michael/go-rest-assured/commit/8d2b70b9947f74a0be915ca272d528a7d563776b))
+
+### Other
+
+- Merge branch 'master' of ssh://github.com/Jesse0Michael/go-rest-assured ([804f6f1](https://github.com/Jesse0Michael/go-rest-assured/commit/804f6f1329407eebea46d36d36b6ccee89ae935a))
+
 # 1.0.0 (2020-04-10)
 
 ### Bug Fixes
