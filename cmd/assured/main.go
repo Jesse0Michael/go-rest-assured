@@ -12,7 +12,7 @@ import (
 	"syscall"
 
 	kitlog "github.com/go-kit/kit/log"
-	"github.com/jesse0michael/go-rest-assured/assured"
+	"github.com/jesse0michael/go-rest-assured/pkg/assured"
 )
 
 func main() {

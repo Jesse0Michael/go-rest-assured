@@ -104,7 +104,7 @@ func TestCallUnmarshalFile(t *testing.T) {
 		"status_code": 200, 
 		"headers": {"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}, 
 		"query": {"assured": "max"}, 
-		"response": "../testdata/assured.json"
+		"response": "testdata/assured.json"
 	}`
 
 	call := Call{}
@@ -120,7 +120,7 @@ func TestCallUnmarshalCallbacks(t *testing.T) {
 		"status_code": 200, 
 		"headers": {"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 		"query": {"assured": "max"}, 
-		"response": "../testdata/assured.json",
+		"response": "testdata/assured.json",
 		"callbacks": [
 			{
 				"target": "http://faketarget.com/",
