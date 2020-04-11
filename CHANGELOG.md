@@ -1,3 +1,13 @@
+## [2.0.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.1...v2.0.2) (2020-04-11)
+
+### Bug Fixes
+
+- remove old assured application ([355b32e](https://github.com/Jesse0Michael/go-rest-assured/commit/355b32ef74386850afc13d00297e304226e41002))
+
+### Other
+
+- Merge branch 'master' of ssh://github.com/Jesse0Michael/go-rest-assured ([8a82f0b](https://github.com/Jesse0Michael/go-rest-assured/commit/8a82f0bcc45657511d3bef0de0d14a78f677d5b5))
+
 ## [2.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.0...v2.0.1) (2020-04-11)
 
 ### Bug Fixes
