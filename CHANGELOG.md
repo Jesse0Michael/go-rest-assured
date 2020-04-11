@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.0...v2.0.1) (2020-04-11)
+
+### Bug Fixes
+
+- separeate application and client readme ([b856342](https://github.com/Jesse0Michael/go-rest-assured/commit/b856342b3e8deac048c33cf8381447e01db33628))
+
 # [1.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v1.0.1...v1.1.0) (2020-04-10)
 
 ### Bug Fixes
