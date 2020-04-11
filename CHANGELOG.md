@@ -1,3 +1,9 @@
+## [2.0.3](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.2...v2.0.3) (2020-04-11)
+
+### Documentation
+
+- update build badge ([8a5872b](https://github.com/Jesse0Michael/go-rest-assured/commit/8a5872b192e9e7991e116301debb454ba1c3a627))
+
 ## [2.0.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.1...v2.0.2) (2020-04-11)
 
 ### Bug Fixes
