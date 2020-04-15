@@ -12,8 +12,13 @@ import (
 	"syscall"
 
 	kitlog "github.com/go-kit/kit/log"
-	"github.com/jesse0michael/go-rest-assured/assured"
+	"github.com/jesse0michael/go-rest-assured/pkg/assured"
 )
+
+// Preload is the expected format for preloading assured endpoints through the go rest assured application
+type Preload struct {
+	Calls []assured.Call `json:"calls"`
+}
 
 func main() {
 	logger := kitlog.NewLogfmtLogger(os.Stdout)
@@ -61,13 +66,13 @@ func main() {
 			logger.Log("fatal", err.Error())
 			os.Exit(1)
 		}
-		var calls []assured.Call
+		var preload Preload
 		// TODO response won't unmarshal string to []byte
-		if err := json.Unmarshal(b, &calls); err != nil {
+		if err := json.Unmarshal(b, &preload); err != nil {
 			logger.Log("fatal", err.Error())
 			os.Exit(1)
 		}
-		client.Given(calls...)
+		client.Given(preload.Calls...)
 		if err != nil {
 			logger.Log("fatal", err.Error())
 			os.Exit(1)

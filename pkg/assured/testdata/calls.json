@@ -1,39 +1,39 @@
 [
   {
     "path": "test/assured",
-		"method": "GET",
+    "method": "GET",
     "status_code": 200,
     "delay": 0,
     "response": "eyJhc3N1cmVkIjogdHJ1ZX0=",
     "headers": {
-      "Content-Length": "17", 
-      "User-Agent": "Go-http-client/1.1", 
+      "Content-Length": "17",
+      "User-Agent": "Go-http-client/1.1",
       "Accept-Encoding": "gzip"
     },
     "query": {
       "assured": "max"
-    } 
+    }
   },
   {
     "path": "test/assured",
-		"method": "GET",
+    "method": "GET",
     "status_code": 409,
     "delay": 0,
     "response": "ZXJyb3I=",
     "headers": {
-      "Content-Length": "5", 
-      "User-Agent": "Go-http-client/1.1", 
+      "Content-Length": "5",
+      "User-Agent": "Go-http-client/1.1",
       "Accept-Encoding": "gzip"
     }
   },
   {
     "path": "teapot/assured",
-		"method": "POST",
+    "method": "POST",
     "status_code": 418,
     "delay": 0,
     "headers": {
-      "Content-Length": "0", 
-      "User-Agent": "Go-http-client/1.1", 
+      "Content-Length": "0",
+      "User-Agent": "Go-http-client/1.1",
       "Accept-Encoding": "gzip"
     }
   }

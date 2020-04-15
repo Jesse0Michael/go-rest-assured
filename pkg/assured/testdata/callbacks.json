@@ -1,36 +1,36 @@
 [
   {
     "path": "test/assured",
-		"method": "GET",
+    "method": "GET",
     "status_code": 201,
     "delay": 0,
     "response": "testdata/assured.json",
     "headers": {
-      "Content-Length": "17", 
-      "User-Agent": "Go-http-client/1.1", 
+      "Content-Length": "17",
+      "User-Agent": "Go-http-client/1.1",
       "Accept-Encoding": "gzip"
     }
   },
   {
     "path": "test/assured",
-		"method": "GET",
+    "method": "GET",
     "status_code": 200,
     "delay": 0,
     "response": "testdata/image.jpg",
     "headers": {
-      "Content-Length": "56000", 
+      "Content-Length": "56000",
       "Content-Type": "image/jpeg",
       "User-Agent": "Go-http-client/1.1"
     }
   },
   {
     "path": "teapot/assured",
-		"method": "POST",
+    "method": "POST",
     "status_code": 418,
     "delay": 2,
     "headers": {
-      "Content-Length": "0", 
-      "User-Agent": "Go-http-client/1.1", 
+      "Content-Length": "0",
+      "User-Agent": "Go-http-client/1.1",
       "Accept-Encoding": "gzip"
     },
     "callbacks": [

@@ -18,6 +18,8 @@ Usage of go-assured:
     	a flag to enable the storing of calls made to the service. (default true)
 ```
 
+To load in a default set of stubbed endpoints from a file, follow the [Preload API Reference](preload_reference.md) guide.
+
 ## Stubbing
 
 To stub out an assured call hit the following endpoint
