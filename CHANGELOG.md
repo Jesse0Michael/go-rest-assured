@@ -1,3 +1,9 @@
+## [2.0.4](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.3...v2.0.4) (2020-04-15)
+
+### Documentation
+
+- document application preload specification ([5cd071b](https://github.com/Jesse0Michael/go-rest-assured/commit/5cd071b05d9eeb39423f878811cb7c6ed6f56423))
+
 ## [2.0.3](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.2...v2.0.3) (2020-04-11)
 
 ### Documentation
