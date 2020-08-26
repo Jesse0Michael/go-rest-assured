@@ -1,9 +1,7 @@
-name: Release
+name: Release Workflow
 on:
-  push:
-    branches:
-      - master
-
+  release:
+    types: [published]
 jobs:
   build:
     name: release
@@ -14,14 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Semantic Release
-        uses: ridedott/release-me-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-
       - name: Build
         run: |
-          docker build --file ./build/Dockerfile -t docker.pkg.github.com/jesse0michael/go-rest-assured/assured:${REF##*/} .
+          docker build --file ./build/Dockerfile -t docker.pkg.github.com/jesse0michael/go-rest-assured/assured:${REF##*/} \
+            -t docker.pkg.github.com/jesse0michael/go-rest-assured/assured:latest .
 
       - name: Push
         run: |
