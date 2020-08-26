@@ -21,4 +21,4 @@ jobs:
       - name: Push
         run: |
           docker login docker.pkg.github.com -u Jesse0Michael -p ${{ secrets.PAT }}
-          docker push docker.pkg.github.com/jesse0michael/go-rest-assured/assured:${REF##*/}
+          docker push docker.pkg.github.com/jesse0michael/go-rest-assured/assured
