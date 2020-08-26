@@ -6,7 +6,9 @@ on:
 
 jobs:
   build:
-    name: tag
+    name: release
+    env:
+      REF: ${{ github.ref }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
