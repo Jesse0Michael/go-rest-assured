@@ -1,5 +1,6 @@
 COVERAGEDIR = .coverage
-LDFLAGS = -ldflags '-X main.gitSHA=$(shell git rev-parse HEAD)'
+GITSHA = $(shell git rev-parse HEAD)
+LDFLAGS = -ldflags '-X main.gitSHA=$(GITSHA)'
 
 all: build test cover
 dependencies: 
@@ -7,6 +8,8 @@ dependencies:
 build:
 	if [ ! -d bin ]; then mkdir bin; fi
 	go build $(LDFLAGS) -v -o bin/go-rest-assured
+docker-build:
+	docker build -f ./build/Dockerfile -t go-rest-assured:$(GITSHA) .
 fmt:
 	go mod tidy
 	gofmt -w -l -s *.go

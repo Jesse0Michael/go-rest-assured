@@ -15,4 +15,13 @@ jobs:
       - name: Semantic Release
         uses: ridedott/release-me-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+
+      - name: Build
+        run: |
+          docker build --file ./build/Dockerfile -t docker.pkg.github.com/jesse0michael/go-rest-assured/assured:${REF##*/} .
+
+      - name: Push
+        run: |
+          docker login docker.pkg.github.com -u Jesse0Michael -p ${{ secrets.PAT }}
+          docker push docker.pkg.github.com/jesse0michael/go-rest-assured/assured:${REF##*/}
