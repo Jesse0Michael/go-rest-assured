@@ -1,3 +1,9 @@
+## [2.0.5](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.4...v2.0.5) (2020-08-26)
+
+### Continuous Integration
+
+- docker build/push ([c18d7a9](https://github.com/Jesse0Michael/go-rest-assured/commit/c18d7a9d07c9682e516a5359fce8c00a6367480e))
+
 ## [2.0.4](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.3...v2.0.4) (2020-04-15)
 
 ### Documentation
