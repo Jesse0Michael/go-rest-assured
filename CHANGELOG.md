@@ -1,3 +1,9 @@
+## [2.0.9](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.8...v2.0.9) (2020-08-26)
+
+### Continuous Integration
+
+- push latest ([590e4c8](https://github.com/Jesse0Michael/go-rest-assured/commit/590e4c86b9620fe8e9b4ba2fe4e26b4f70da23dc))
+
 ## [2.0.8](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.7...v2.0.8) (2020-08-26)
 
 ### Continuous Integration
