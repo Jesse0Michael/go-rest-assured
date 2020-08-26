@@ -1,3 +1,9 @@
+## [2.0.7](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.6...v2.0.7) (2020-08-26)
+
+### Continuous Integration
+
+- separate tagging and releasing ([d0464f6](https://github.com/Jesse0Michael/go-rest-assured/commit/d0464f6cb0c518fd15193f32138c66c11d5b48d0))
+
 ## [2.0.6](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.5...v2.0.6) (2020-08-26)
 
 ### Continuous Integration
