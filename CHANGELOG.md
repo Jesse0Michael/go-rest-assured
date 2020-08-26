@@ -1,3 +1,13 @@
+## [2.0.6](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.5...v2.0.6) (2020-08-26)
+
+### Continuous Integration
+
+- include release reference ([3e7eae4](https://github.com/Jesse0Michael/go-rest-assured/commit/3e7eae410bc2ecfd567eb795d5c4a7433a113dcd))
+
+### Other
+
+- Merge branch 'master' of ssh://github.com/Jesse0Michael/go-rest-assured ([137c9fd](https://github.com/Jesse0Michael/go-rest-assured/commit/137c9fdcb69531310a5cb47d8c77e629f26bc424))
+
 ## [2.0.5](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.4...v2.0.5) (2020-08-26)
 
 ### Continuous Integration
