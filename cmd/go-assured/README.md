@@ -57,6 +57,37 @@ To verify the calls made against your go-rest-assured service, use the endpoint 
 
 This endpoint returns a list of assured calls made against the matching Method/Path
 
+```
+[
+  {
+    "path": "test/assured",
+    "method": "GET",
+    "status_code": 200,
+    "delay": 0,
+    "response": "eyJhc3N1cmVkIjogdHJ1ZX0=",
+    "headers": {
+      "Content-Length": "17",
+      "User-Agent": "Go-http-client/1.1",
+    },
+    "query": {
+      "assured": "max"
+    }
+  },
+  {
+    "path": "test/assured",
+    "method": "GET",
+    "status_code": 409,
+    "delay": 0,
+    "response": "ZXJyb3I=",
+    "headers": {
+      "Content-Length": "5",
+      "User-Agent": "Go-http-client/1.1",
+    }
+  }
+]
+
+```
+
 ## Clearing
 
 To clear out the stubbed and made calls for a specific Method/Path, use the endpoint `/clear/{path:.*}`
