@@ -1,3 +1,9 @@
+## [2.0.10](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.9...v2.0.10) (2020-08-28)
+
+### Documentation
+
+- add response examle ([f0b00d0](https://github.com/Jesse0Michael/go-rest-assured/commit/f0b00d0357e8103efd86c7608c4efbf46198c4c4))
+
 ## [2.0.9](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.8...v2.0.9) (2020-08-26)
 
 ### Continuous Integration
