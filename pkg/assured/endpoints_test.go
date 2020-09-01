@@ -14,39 +14,39 @@ import (
 
 func TestNewAssuredEndpoints(t *testing.T) {
 	expected := &AssuredEndpoints{
-		logger:         testSettings.Logger,
-		httpClient:     *http.DefaultClient,
+		logger:         kitlog.NewNopLogger(),
+		httpClient:     http.DefaultClient,
 		assuredCalls:   NewCallStore(),
 		madeCalls:      NewCallStore(),
 		trackMadeCalls: true,
 	}
-	actual := NewAssuredEndpoints(testSettings)
+	actual := NewAssuredEndpoints(DefaultOptions)
 
 	require.Equal(t, expected.assuredCalls, actual.assuredCalls)
 	require.Equal(t, expected.madeCalls, actual.madeCalls)
 }
 
 func TestWrappedEndpointSuccess(t *testing.T) {
-	endpoints := NewAssuredEndpoints(testSettings)
+	endpoints := NewAssuredEndpoints(DefaultOptions)
 	testEndpoint := func(ctx context.Context, call *Call) (interface{}, error) {
 		return call, nil
 	}
 
 	actual := endpoints.WrappedEndpoint(testEndpoint)
-	c, err := actual(ctx, testCall1())
+	c, err := actual(context.TODO(), testCall1())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall1(), c)
 }
 
 func TestWrappedEndpointFailure(t *testing.T) {
-	endpoints := NewAssuredEndpoints(testSettings)
+	endpoints := NewAssuredEndpoints(DefaultOptions)
 	testEndpoint := func(ctx context.Context, call *Call) (interface{}, error) {
 		return call, nil
 	}
 
 	actual := endpoints.WrappedEndpoint(testEndpoint)
-	c, err := actual(ctx, false)
+	c, err := actual(context.TODO(), false)
 
 	require.Nil(t, c)
 	require.Error(t, err)
@@ -54,19 +54,19 @@ func TestWrappedEndpointFailure(t *testing.T) {
 }
 
 func TestGivenEndpointSuccess(t *testing.T) {
-	endpoints := NewAssuredEndpoints(testSettings)
+	endpoints := NewAssuredEndpoints(DefaultOptions)
 
-	c, err := endpoints.GivenEndpoint(ctx, testCall1())
+	c, err := endpoints.GivenEndpoint(context.TODO(), testCall1())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall1(), c)
 
-	c, err = endpoints.GivenEndpoint(ctx, testCall2())
+	c, err = endpoints.GivenEndpoint(context.TODO(), testCall2())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall2(), c)
 
-	c, err = endpoints.GivenEndpoint(ctx, testCall3())
+	c, err = endpoints.GivenEndpoint(context.TODO(), testCall3())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall3(), c)
@@ -75,30 +75,30 @@ func TestGivenEndpointSuccess(t *testing.T) {
 }
 
 func TestGivenCallbackEndpointSuccess(t *testing.T) {
-	endpoints := NewAssuredEndpoints(testSettings)
+	endpoints := NewAssuredEndpoints(DefaultOptions)
 
 	callback1 := testCall1()
 	callback1.Headers[AssuredCallbackKey] = "call-key"
-	c, err := endpoints.GivenEndpoint(ctx, callback1)
+	c, err := endpoints.GivenEndpoint(context.TODO(), callback1)
 
 	require.NoError(t, err)
 	require.Equal(t, callback1, c)
 
 	callback2 := testCall2()
 	callback2.Headers[AssuredCallbackKey] = "call-key"
-	c, err = endpoints.GivenEndpoint(ctx, callback2)
+	c, err = endpoints.GivenEndpoint(context.TODO(), callback2)
 
 	require.NoError(t, err)
 	require.Equal(t, callback2, c)
 
 	callback3 := testCall3()
 	callback3.Headers[AssuredCallbackKey] = "call-key"
-	c, err = endpoints.GivenEndpoint(ctx, callback3)
+	c, err = endpoints.GivenEndpoint(context.TODO(), callback3)
 
 	require.NoError(t, err)
 	require.Equal(t, callback3, c)
 
-	c, err = endpoints.GivenCallbackEndpoint(ctx, testCallback())
+	c, err = endpoints.GivenCallbackEndpoint(context.TODO(), testCallback())
 
 	expectedAssured := &CallStore{
 		data: map[string][]*Call{
@@ -120,7 +120,7 @@ func TestGivenCallbackEndpointSuccess(t *testing.T) {
 
 func TestWhenEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         testSettings.Logger,
+		logger:         DefaultOptions.logger,
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      NewCallStore(),
 		callbackCalls:  NewCallStore(),
@@ -131,19 +131,19 @@ func TestWhenEndpointSuccess(t *testing.T) {
 		"POST:teapot/assured": {testCall3()},
 	}
 
-	c, err := endpoints.WhenEndpoint(ctx, testCall1())
+	c, err := endpoints.WhenEndpoint(context.TODO(), testCall1())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall1(), c)
 	require.Equal(t, expected, endpoints.assuredCalls.data)
 
-	c, err = endpoints.WhenEndpoint(ctx, testCall2())
+	c, err = endpoints.WhenEndpoint(context.TODO(), testCall2())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall2(), c)
 	require.Equal(t, fullAssuredCalls, endpoints.assuredCalls)
 
-	c, err = endpoints.WhenEndpoint(ctx, testCall3())
+	c, err = endpoints.WhenEndpoint(context.TODO(), testCall3())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall3(), c)
@@ -153,7 +153,7 @@ func TestWhenEndpointSuccess(t *testing.T) {
 
 func TestWhenEndpointSuccessTrackingDisabled(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         testSettings.Logger,
+		logger:         DefaultOptions.logger,
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      NewCallStore(),
 		callbackCalls:  NewCallStore(),
@@ -164,19 +164,19 @@ func TestWhenEndpointSuccessTrackingDisabled(t *testing.T) {
 		"POST:teapot/assured": {testCall3()},
 	}
 
-	c, err := endpoints.WhenEndpoint(ctx, testCall1())
+	c, err := endpoints.WhenEndpoint(context.TODO(), testCall1())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall1(), c)
 	require.Equal(t, expected, endpoints.assuredCalls.data)
 
-	c, err = endpoints.WhenEndpoint(ctx, testCall2())
+	c, err = endpoints.WhenEndpoint(context.TODO(), testCall2())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall2(), c)
 	require.Equal(t, fullAssuredCalls, endpoints.assuredCalls)
 
-	c, err = endpoints.WhenEndpoint(ctx, testCall3())
+	c, err = endpoints.WhenEndpoint(context.TODO(), testCall3())
 
 	require.NoError(t, err)
 	require.Equal(t, testCall3(), c)
@@ -194,18 +194,19 @@ func TestWhenEndpointSuccessCallbacks(t *testing.T) {
 	call := testCallback()
 	call.Headers[AssuredCallbackTarget] = testServer.URL
 	endpoints := &AssuredEndpoints{
-		logger: testSettings.Logger,
+		logger:     DefaultOptions.logger,
+		httpClient: http.DefaultClient,
 		assuredCalls: &CallStore{
-			data: map[string][]*Call{"GET:test/assured": []*Call{assured}},
+			data: map[string][]*Call{"GET:test/assured": {assured}},
 		},
 		madeCalls: NewCallStore(),
 		callbackCalls: &CallStore{
-			data: map[string][]*Call{"call-key": []*Call{call}},
+			data: map[string][]*Call{"call-key": {call}},
 		},
 		trackMadeCalls: true,
 	}
 
-	c, err := endpoints.WhenEndpoint(ctx, assured)
+	c, err := endpoints.WhenEndpoint(context.TODO(), assured)
 
 	require.NoError(t, err)
 	require.Equal(t, assured, c)
@@ -226,18 +227,19 @@ func TestWhenEndpointSuccessDelayed(t *testing.T) {
 	call.Headers[AssuredCallbackTarget] = testServer.URL
 	call.Headers[AssuredCallbackDelay] = "4"
 	endpoints := &AssuredEndpoints{
-		logger: testSettings.Logger,
+		logger:     DefaultOptions.logger,
+		httpClient: http.DefaultClient,
 		assuredCalls: &CallStore{
-			data: map[string][]*Call{"GET:test/assured": []*Call{assured}},
+			data: map[string][]*Call{"GET:test/assured": {assured}},
 		},
 		madeCalls: NewCallStore(),
 		callbackCalls: &CallStore{
-			data: map[string][]*Call{"call-key": []*Call{call}},
+			data: map[string][]*Call{"call-key": {call}},
 		},
 		trackMadeCalls: true,
 	}
 	start := time.Now()
-	c, err := endpoints.WhenEndpoint(ctx, assured)
+	c, err := endpoints.WhenEndpoint(context.TODO(), assured)
 
 	require.True(t, time.Since(start) >= 2*time.Second, "response should be delayed 2 seconds")
 	require.NoError(t, err)
@@ -256,7 +258,7 @@ func TestSendCallbackBadRequest(t *testing.T) {
 	}))
 	call := testCallback()
 	call.Method = "\""
-	endpoints := NewAssuredEndpoints(testSettings)
+	endpoints := NewAssuredEndpoints(DefaultOptions)
 	endpoints.sendCallback(testServer.URL, call)
 
 	// allow go routine to finish
@@ -265,14 +267,14 @@ func TestSendCallbackBadRequest(t *testing.T) {
 }
 
 func TestSendCallbackBadResponse(t *testing.T) {
-	endpoints := NewAssuredEndpoints(testSettings)
+	endpoints := NewAssuredEndpoints(DefaultOptions)
 	endpoints.sendCallback("http://localhost:900000", testCallback())
 }
 
 func TestWhenEndpointNotFound(t *testing.T) {
-	endpoints := NewAssuredEndpoints(testSettings)
+	endpoints := NewAssuredEndpoints(DefaultOptions)
 
-	c, err := endpoints.WhenEndpoint(ctx, testCall1())
+	c, err := endpoints.WhenEndpoint(context.TODO(), testCall1())
 
 	require.Nil(t, c)
 	require.Error(t, err)
@@ -285,12 +287,12 @@ func TestVerifyEndpointSuccess(t *testing.T) {
 		trackMadeCalls: true,
 	}
 
-	c, err := endpoints.VerifyEndpoint(ctx, testCall1())
+	c, err := endpoints.VerifyEndpoint(context.TODO(), testCall1())
 
 	require.NoError(t, err)
 	require.Equal(t, []*Call{testCall1(), testCall2()}, c)
 
-	c, err = endpoints.VerifyEndpoint(ctx, testCall3())
+	c, err = endpoints.VerifyEndpoint(context.TODO(), testCall3())
 
 	require.NoError(t, err)
 	require.Equal(t, []*Call{testCall3()}, c)
@@ -302,7 +304,7 @@ func TestVerifyEndpointTrackingDisabled(t *testing.T) {
 		trackMadeCalls: false,
 	}
 
-	c, err := endpoints.VerifyEndpoint(ctx, testCall1())
+	c, err := endpoints.VerifyEndpoint(context.TODO(), testCall1())
 
 	require.Nil(t, c)
 	require.Error(t, err)
@@ -321,21 +323,21 @@ func TestClearEndpointSuccess(t *testing.T) {
 		"POST:teapot/assured": {testCall3()},
 	}
 
-	c, err := endpoints.ClearEndpoint(ctx, testCall1())
+	c, err := endpoints.ClearEndpoint(context.TODO(), testCall1())
 
 	require.NoError(t, err)
 	require.Nil(t, c)
 	require.Equal(t, expected, endpoints.assuredCalls.data)
 	require.Equal(t, expected, endpoints.madeCalls.data)
 
-	c, err = endpoints.ClearEndpoint(ctx, testCall2())
+	c, err = endpoints.ClearEndpoint(context.TODO(), testCall2())
 
 	require.NoError(t, err)
 	require.Nil(t, c)
 	require.Equal(t, expected, endpoints.assuredCalls.data)
 	require.Equal(t, expected, endpoints.madeCalls.data)
 
-	c, err = endpoints.ClearEndpoint(ctx, testCall3())
+	c, err = endpoints.ClearEndpoint(context.TODO(), testCall3())
 
 	require.NoError(t, err)
 	require.Nil(t, c)
@@ -357,7 +359,7 @@ func TestClearEndpointSuccessCallback(t *testing.T) {
 		trackMadeCalls: true,
 	}
 
-	c, err := endpoints.ClearEndpoint(ctx, testCallback())
+	c, err := endpoints.ClearEndpoint(context.TODO(), testCallback())
 
 	require.NoError(t, err)
 	require.Nil(t, c)
@@ -375,7 +377,7 @@ func TestClearAllEndpointSuccess(t *testing.T) {
 		trackMadeCalls: true,
 	}
 
-	c, err := endpoints.ClearAllEndpoint(ctx, nil)
+	c, err := endpoints.ClearAllEndpoint(context.TODO(), nil)
 
 	require.NoError(t, err)
 	require.Nil(t, c)

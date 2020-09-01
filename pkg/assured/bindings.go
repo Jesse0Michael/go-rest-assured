@@ -23,32 +23,30 @@ const (
 	AssuredCallbackDelay  = "Assured-Callback-Delay"
 )
 
-// StartApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
-func StartApplicationHTTPListener(root context.Context, errc chan error, settings Settings) {
+// startApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
+func (c *Client) startApplicationHTTPListener() {
 	go func() {
-		ctx, cancel := context.WithCancel(root)
-		defer cancel()
-
-		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", settings.Port))
+		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Port))
 		if err != nil {
-			panic(err)
+			c.Errc <- err
+			return
 		}
 
 		go func() {
-			<-ctx.Done()
+			<-c.ctx.Done()
 			listen.Close()
 		}()
 
-		router := createApplicationRouter(ctx, settings)
-		settings.Logger.Log("message", fmt.Sprintf("starting go rest assured on port %d", listen.Addr().(*net.TCPAddr).Port))
-		errc <- http.Serve(listen, handlers.RecoveryHandler()(router))
+		router := c.createApplicationRouter()
+		_ = c.logger.Log("message", "starting go rest assured", "port", c.Port)
+		c.Errc <- http.Serve(listen, handlers.RecoveryHandler()(router))
 	}()
 }
 
 // createApplicationRouter sets up the router that will handle all of the application routes
-func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router {
+func (c *Client) createApplicationRouter() *mux.Router {
 	router := mux.NewRouter()
-	e := NewAssuredEndpoints(settings)
+	e := NewAssuredEndpoints(c.Options)
 	assuredMethods := []string{
 		http.MethodGet,
 		http.MethodHead,
@@ -66,7 +64,7 @@ func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router
 			e.WrappedEndpoint(e.GivenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(settings.Logger),
+			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -76,7 +74,7 @@ func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router
 			e.WrappedEndpoint(e.GivenCallbackEndpoint),
 			decodeAssuredCallback,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(settings.Logger),
+			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -86,7 +84,7 @@ func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router
 			e.WrappedEndpoint(e.WhenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(settings.Logger),
+			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -96,7 +94,7 @@ func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router
 			e.WrappedEndpoint(e.VerifyEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(settings.Logger),
+			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -106,7 +104,7 @@ func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router
 			e.WrappedEndpoint(e.ClearEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(settings.Logger),
+			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -116,7 +114,7 @@ func createApplicationRouter(ctx context.Context, settings Settings) *mux.Router
 			e.ClearAllEndpoint,
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(settings.Logger),
+			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(http.MethodDelete)
 
@@ -205,7 +203,7 @@ func encodeAssuredCall(ctx context.Context, w http.ResponseWriter, i interface{}
 			}
 		}
 		w.WriteHeader(resp.StatusCode)
-		w.Write([]byte(resp.String()))
+		_, _ = w.Write([]byte(resp.String()))
 	case []*Call:
 		w.Header().Set("Content-Type", "application/json")
 		return json.NewEncoder(w).Encode(resp)

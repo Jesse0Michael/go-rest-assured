@@ -15,30 +15,22 @@ import (
 // AssuredEndpoints
 type AssuredEndpoints struct {
 	logger         kitlog.Logger
-	httpClient     http.Client
+	httpClient     *http.Client
 	assuredCalls   *CallStore
 	madeCalls      *CallStore
 	callbackCalls  *CallStore
 	trackMadeCalls bool
 }
 
-// Settings
-type Settings struct {
-	Logger         kitlog.Logger
-	HTTPClient     http.Client
-	Port           int
-	TrackMadeCalls bool
-}
-
 // NewAssuredEndpoints creates a new instance of assured endpoints
-func NewAssuredEndpoints(settings Settings) *AssuredEndpoints {
+func NewAssuredEndpoints(options Options) *AssuredEndpoints {
 	return &AssuredEndpoints{
 		assuredCalls:   NewCallStore(),
 		madeCalls:      NewCallStore(),
 		callbackCalls:  NewCallStore(),
-		logger:         settings.Logger,
-		httpClient:     settings.HTTPClient,
-		trackMadeCalls: settings.TrackMadeCalls,
+		logger:         options.logger,
+		httpClient:     options.httpClient,
+		trackMadeCalls: options.trackMadeCalls,
 	}
 }
 
@@ -57,7 +49,7 @@ func (a *AssuredEndpoints) WrappedEndpoint(handler func(context.Context, *Call) 
 // GivenEndpoint is used to stub out a call for a given path
 func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	a.assuredCalls.Add(call)
-	a.logger.Log("message", "assured call set", "path", call.ID())
+	_ = a.logger.Log("message", "assured call set", "path", call.ID())
 
 	return call, nil
 }
@@ -65,7 +57,7 @@ func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *Call) (inter
 // GivenCallbackEndpoint is used to stub out callbacks for a callback key
 func (a *AssuredEndpoints) GivenCallbackEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	a.callbackCalls.AddAt(call.Headers[AssuredCallbackKey], call)
-	a.logger.Log("message", "assured callback set", "key", call.Headers[AssuredCallbackKey], "target", call.Headers[AssuredCallbackTarget])
+	_ = a.logger.Log("message", "assured callback set", "key", call.Headers[AssuredCallbackKey], "target", call.Headers[AssuredCallbackTarget])
 
 	return call, nil
 }
@@ -74,7 +66,7 @@ func (a *AssuredEndpoints) GivenCallbackEndpoint(ctx context.Context, call *Call
 func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	calls := a.assuredCalls.Get(call.ID())
 	if len(calls) == 0 {
-		a.logger.Log("message", "assured call not found", "path", call.ID())
+		_ = a.logger.Log("message", "assured call not found", "path", call.ID())
 		return nil, errors.New("No assured calls")
 	}
 
@@ -94,7 +86,7 @@ func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interf
 		time.Sleep(time.Duration(delay) * time.Second)
 	}
 
-	a.logger.Log("message", "assured call responded", "path", call.ID())
+	_ = a.logger.Log("message", "assured call responded", "path", call.ID())
 	return assured, nil
 }
 
@@ -110,10 +102,10 @@ func (a *AssuredEndpoints) VerifyEndpoint(ctx context.Context, call *Call) (inte
 func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	a.assuredCalls.Clear(call.ID())
 	a.madeCalls.Clear(call.ID())
-	a.logger.Log("message", "cleared calls for path", "path", call.ID())
+	_ = a.logger.Log("message", "cleared calls for path", "path", call.ID())
 	if call.Headers[AssuredCallbackKey] != "" {
 		a.callbackCalls.Clear(call.Headers[AssuredCallbackKey])
-		a.logger.Log("message", "cleared callbacks for key", "key", call.Headers[AssuredCallbackKey])
+		_ = a.logger.Log("message", "cleared callbacks for key", "key", call.Headers[AssuredCallbackKey])
 	}
 
 	return nil, nil
@@ -124,7 +116,7 @@ func (a *AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) 
 	a.assuredCalls.ClearAll()
 	a.madeCalls.ClearAll()
 	a.callbackCalls.ClearAll()
-	a.logger.Log("message", "cleared all calls")
+	_ = a.logger.Log("message", "cleared all calls")
 
 	return nil, nil
 }
@@ -137,7 +129,7 @@ func (a *AssuredEndpoints) sendCallback(target string, call *Call) {
 	}
 	req, err := http.NewRequest(call.Method, target, bytes.NewBuffer(call.Response))
 	if err != nil {
-		a.logger.Log("message", "failed to build callback request", "target", target, "error", err.Error())
+		_ = a.logger.Log("message", "failed to build callback request", "target", target, "error", err.Error())
 		return
 	}
 	for key, value := range call.Headers {
@@ -147,8 +139,8 @@ func (a *AssuredEndpoints) sendCallback(target string, call *Call) {
 	time.Sleep(time.Duration(delay) * time.Second)
 	resp, err := a.httpClient.Do(req)
 	if err != nil {
-		a.logger.Log("message", "failed to reach callback target", "target", target, "error", err.Error())
+		_ = a.logger.Log("message", "failed to reach callback target", "target", target, "error", err.Error())
 		return
 	}
-	a.logger.Log("message", "sent callback to target", "target", target, "status_code", resp.StatusCode)
+	_ = a.logger.Log("message", "sent callback to target", "target", target, "status_code", resp.StatusCode)
 }

@@ -5,55 +5,40 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
 
-	kitlog "github.com/go-kit/kit/log"
 	"github.com/pborman/uuid"
 )
 
 // Client
 type Client struct {
-	Errc       chan error
-	Port       int
-	ctx        context.Context
-	cancel     context.CancelFunc
-	httpClient http.Client
-}
-
-// NewDefaultClient creates a new go-rest-assured client with default parameters
-func NewDefaultClient() *Client {
-	settings := Settings{
-		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
-		HTTPClient:     *http.DefaultClient,
-		TrackMadeCalls: true,
-	}
-	return NewClient(nil, settings)
+	Errc chan error
+	Options
 }
 
 // NewClient creates a new go-rest-assured client
-func NewClient(root context.Context, settings Settings) *Client {
-	if root == nil {
-		root = context.Background()
+func NewClient(opts ...Option) *Client {
+	c := Client{
+		Errc:    make(chan error),
+		Options: DefaultOptions,
 	}
-	if settings.Port == 0 {
+	c.Options.applyOptions(opts...)
+
+	if c.ctx == nil {
+		c.ctx = context.Background()
+	}
+	c.ctx, c.cancel = context.WithCancel(c.Options.ctx)
+
+	if c.Options.Port == 0 {
 		if listen, err := net.Listen("tcp", ":0"); err == nil {
-			settings.Port = listen.Addr().(*net.TCPAddr).Port
+			c.Options.Port = listen.Addr().(*net.TCPAddr).Port
 			listen.Close()
 		}
 	}
-	ctx, cancel := context.WithCancel(root)
-	c := Client{
-		Errc:       make(chan error),
-		Port:       settings.Port,
-		ctx:        ctx,
-		cancel:     cancel,
-		httpClient: settings.HTTPClient,
-	}
-	StartApplicationHTTPListener(c.ctx, c.Errc, settings)
+	c.startApplicationHTTPListener()
 	return &c
 }
 
