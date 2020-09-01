@@ -131,7 +131,7 @@ func TestCallUnmarshalCallbacks(t *testing.T) {
 	}`
 	expected := *testCall1()
 	expected.Callbacks = []Callback{
-		Callback{
+		{
 			Target:   "http://faketarget.com/",
 			Response: []byte(`{"done": true}`),
 			Method:   "POST",

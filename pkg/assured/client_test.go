@@ -2,7 +2,6 @@ package assured
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -12,20 +11,11 @@ import (
 	"testing"
 	"time"
 
-	kitlog "github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient(t *testing.T) {
-	httpClient := &http.Client{}
-	ctx := context.Background()
-	settings := Settings{
-		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
-		Port:           9091,
-		TrackMadeCalls: true,
-		HTTPClient:     *httpClient,
-	}
-	client := NewClient(ctx, settings)
+	client := NewClient(WithPort(9091))
 	time.Sleep(time.Second)
 
 	url := client.URL()
@@ -37,7 +27,7 @@ func TestClient(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
 	require.NoError(t, err)
 
-	resp, err := httpClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	body, err := ioutil.ReadAll(resp.Body)
@@ -47,7 +37,7 @@ func TestClient(t *testing.T) {
 	req, err = http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"again"}`)))
 	require.NoError(t, err)
 
-	resp, err = httpClient.Do(req)
+	resp, err = http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusConflict, resp.StatusCode)
 	body, err = ioutil.ReadAll(resp.Body)
@@ -57,7 +47,7 @@ func TestClient(t *testing.T) {
 	req, err = http.NewRequest(http.MethodPost, url+"/teapot/assured", bytes.NewReader([]byte(`{"calling":"here"}`)))
 	require.NoError(t, err)
 
-	resp, err = httpClient.Do(req)
+	resp, err = http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusTeapot, resp.StatusCode)
 	body, err = ioutil.ReadAll(resp.Body)
@@ -67,13 +57,13 @@ func TestClient(t *testing.T) {
 	calls, err := client.Verify("GET", "test/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
-		Call{
+		{
 			Method:     "GET",
 			Path:       "test/assured",
 			StatusCode: 200,
 			Response:   []byte(`{"calling":"you"}`),
 			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}},
-		Call{
+		{
 			Method:     "GET",
 			Path:       "test/assured",
 			StatusCode: 200,
@@ -83,7 +73,7 @@ func TestClient(t *testing.T) {
 	calls, err = client.Verify("POST", "teapot/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
-		Call{
+		{
 			Method:     "POST",
 			Path:       "teapot/assured",
 			StatusCode: 200,
@@ -100,7 +90,7 @@ func TestClient(t *testing.T) {
 	calls, err = client.Verify("POST", "teapot/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
-		Call{
+		{
 			Method:     "POST",
 			Path:       "teapot/assured",
 			StatusCode: 200,
@@ -136,7 +126,7 @@ func TestClientCallbacks(t *testing.T) {
 		require.Equal(t, []byte(`{"wait":"there's more"}`), body)
 		delayCalled = true
 	}))
-	client := NewDefaultClient()
+	client := NewClient()
 	time.Sleep(time.Second)
 
 	require.NoError(t, client.Given(Call{
@@ -144,13 +134,13 @@ func TestClientCallbacks(t *testing.T) {
 		Method: "POST",
 		Delay:  2,
 		Callbacks: []Callback{
-			Callback{
+			{
 				Method:   "POST",
 				Target:   testServer.URL,
 				Response: []byte(`{"done":"here"}`),
 				Headers:  map[string]string{"x-info": "important"},
 			},
-			Callback{
+			{
 				Method:   "POST",
 				Target:   delayTestServer.URL,
 				Delay:    4,
@@ -176,8 +166,8 @@ func TestClientCallbacks(t *testing.T) {
 }
 
 func TestClientClose(t *testing.T) {
-	client := NewDefaultClient()
-	client2 := NewDefaultClient()
+	client := NewClient()
+	client2 := NewClient()
 	time.Sleep(time.Second)
 
 	require.NotEqual(t, client.URL(), client2.URL())
@@ -201,8 +191,7 @@ func TestClientClose(t *testing.T) {
 }
 
 func TestClientGivenNoMethod(t *testing.T) {
-	httpClient := http.Client{}
-	client := NewDefaultClient()
+	client := NewClient()
 	time.Sleep(time.Second)
 
 	err := client.Given(Call{Path: "NoMethodMan"})
@@ -211,7 +200,7 @@ func TestClientGivenNoMethod(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, client.URL()+"/NoMethodMan", nil)
 	require.NoError(t, err)
 
-	resp, err := httpClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
@@ -220,10 +209,10 @@ func TestClientGivenCallbackMissingTarget(t *testing.T) {
 	call := Call{
 		Method: "POST",
 		Callbacks: []Callback{
-			Callback{Method: "POST"},
+			{Method: "POST"},
 		},
 	}
-	client := NewDefaultClient()
+	client := NewClient()
 
 	err := client.Given(call)
 
@@ -235,10 +224,10 @@ func TestClientGivenCallbackBadMethod(t *testing.T) {
 	call := Call{
 		Method: "POST",
 		Callbacks: []Callback{
-			Callback{Method: "\"", Target: "http://localhost/"},
+			{Method: "\"", Target: "http://localhost/"},
 		},
 	}
-	client := NewDefaultClient()
+	client := NewClient()
 
 	err := client.Given(call)
 
@@ -247,7 +236,7 @@ func TestClientGivenCallbackBadMethod(t *testing.T) {
 }
 
 func TestClientBadRequestFailure(t *testing.T) {
-	client := NewDefaultClient()
+	client := NewClient()
 
 	err := client.Given(Call{Method: "\"", Path: "goat/path"})
 
@@ -278,8 +267,8 @@ func TestClientBadRequestFailure(t *testing.T) {
 }
 
 func TestClientVerifyHttpClientFailure(t *testing.T) {
-	client := NewDefaultClient()
-	client.Port = 1
+	client := NewClient()
+	client.Close()
 
 	calls, err := client.Verify("GONE", "not/started")
 
@@ -289,7 +278,7 @@ func TestClientVerifyHttpClientFailure(t *testing.T) {
 }
 
 func TestClientVerifyResponseFailure(t *testing.T) {
-	client := NewDefaultClient()
+	client := NewClient()
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -307,10 +296,10 @@ func TestClientVerifyResponseFailure(t *testing.T) {
 }
 
 func TestClientVerifyBodyFailure(t *testing.T) {
-	client := NewDefaultClient()
+	client := NewClient()
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode("ydob+dab")
+		_ = json.NewEncoder(w).Encode("ydob+dab")
 	}))
 	defer testServer.Close()
 	index := strings.LastIndex(testServer.URL, ":")
@@ -326,8 +315,7 @@ func TestClientVerifyBodyFailure(t *testing.T) {
 }
 
 func TestClientPathSanitization(t *testing.T) {
-	httpClient := &http.Client{}
-	client := NewDefaultClient()
+	client := NewClient()
 	time.Sleep(time.Second)
 
 	require.NoError(t, client.Given(Call{Method: "GET", Path: "///yoyo/path///", StatusCode: http.StatusAccepted}))
@@ -335,7 +323,7 @@ func TestClientPathSanitization(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, client.URL()+"/yoyo/path", nil)
 	require.NoError(t, err)
 
-	resp, err := httpClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusAccepted, resp.StatusCode)
 }

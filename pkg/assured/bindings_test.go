@@ -8,13 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	kitlog "github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/require"
 )
 
 func TestApplicationRouterGivenBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, testSettings)
+	router := NewClient().createApplicationRouter()
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/given/rest/assured", nil)
@@ -27,7 +26,7 @@ func TestApplicationRouterGivenBinding(t *testing.T) {
 }
 
 func TestApplicationRouterGivenCallbackBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, testSettings)
+	router := NewClient().createApplicationRouter()
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/callback", nil)
@@ -42,7 +41,7 @@ func TestApplicationRouterGivenCallbackBinding(t *testing.T) {
 }
 
 func TestApplicationRouterWhenBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, testSettings)
+	router := NewClient().createApplicationRouter()
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/given/rest/assured", bytes.NewBuffer([]byte(`{"assured": true}`)))
@@ -60,7 +59,7 @@ func TestApplicationRouterWhenBinding(t *testing.T) {
 }
 
 func TestApplicationRouterVerifyBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, testSettings)
+	router := NewClient().createApplicationRouter()
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/verify/rest/assured", nil)
@@ -73,7 +72,7 @@ func TestApplicationRouterVerifyBinding(t *testing.T) {
 }
 
 func TestApplicationRouterClearBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, testSettings)
+	router := NewClient().createApplicationRouter()
 
 	for _, verb := range verbs {
 		req, err := http.NewRequest(verb, "/clear/rest/assured", nil)
@@ -86,7 +85,7 @@ func TestApplicationRouterClearBinding(t *testing.T) {
 }
 
 func TestApplicationRouterClearAllBinding(t *testing.T) {
-	router := createApplicationRouter(ctx, testSettings)
+	router := NewClient().createApplicationRouter()
 
 	req, err := http.NewRequest(http.MethodDelete, "/clear", nil)
 	require.NoError(t, err)
@@ -97,7 +96,7 @@ func TestApplicationRouterClearAllBinding(t *testing.T) {
 }
 
 func TestApplicationRouterFailure(t *testing.T) {
-	router := createApplicationRouter(ctx, testSettings)
+	router := NewClient().createApplicationRouter()
 
 	req, err := http.NewRequest(http.MethodGet, "/trouble", nil)
 	require.NoError(t, err)
@@ -117,7 +116,7 @@ func TestDecodeAssuredCall(t *testing.T) {
 		Query:      map[string]string{"assured": "max"},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
-		c, err := decodeAssuredCall(ctx, req)
+		c, err := decodeAssuredCall(context.TODO(), req)
 
 		require.NoError(t, err)
 		require.Equal(t, expected, c)
@@ -145,7 +144,7 @@ func TestDecodeAssuredCallNilBody(t *testing.T) {
 		Query:      map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
-		c, err := decodeAssuredCall(ctx, req)
+		c, err := decodeAssuredCall(context.TODO(), req)
 
 		require.NoError(t, err)
 		require.Equal(t, expected, c)
@@ -173,7 +172,7 @@ func TestDecodeAssuredCallStatus(t *testing.T) {
 		Query:      map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
-		c, err := decodeAssuredCall(ctx, req)
+		c, err := decodeAssuredCall(context.TODO(), req)
 
 		require.NoError(t, err)
 		require.Equal(t, expected, c)
@@ -202,7 +201,7 @@ func TestDecodeAssuredCallStatusFailure(t *testing.T) {
 		Query:      map[string]string{},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
-		c, err := decodeAssuredCall(ctx, req)
+		c, err := decodeAssuredCall(context.TODO(), req)
 
 		require.NoError(t, err)
 		require.Equal(t, expected, c)
@@ -230,7 +229,7 @@ func TestDecodeAssuredCallback(t *testing.T) {
 		Headers:    map[string]string{"Assured-Callback-Target": "http://faketarget.com/", "Assured-Callback-Key": "call-key"},
 	}
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
-		c, err := decodeAssuredCallback(ctx, req)
+		c, err := decodeAssuredCallback(context.TODO(), req)
 
 		require.NoError(t, err)
 		require.Equal(t, expected, c)
@@ -253,7 +252,7 @@ func TestDecodeAssuredCallback(t *testing.T) {
 func TestDecodeAssuredCallbackMissingKey(t *testing.T) {
 	decoded := false
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
-		c, err := decodeAssuredCallback(ctx, req)
+		c, err := decodeAssuredCallback(context.TODO(), req)
 
 		require.Nil(t, c)
 		require.Error(t, err)
@@ -276,7 +275,7 @@ func TestDecodeAssuredCallbackMissingKey(t *testing.T) {
 func TestDecodeAssuredCallbackMissingTarget(t *testing.T) {
 	decoded := false
 	testDecode := func(resp http.ResponseWriter, req *http.Request) {
-		c, err := decodeAssuredCallback(ctx, req)
+		c, err := decodeAssuredCallback(context.TODO(), req)
 
 		require.Nil(t, c)
 		require.Error(t, err)
@@ -306,7 +305,7 @@ func TestEncodeAssuredCall(t *testing.T) {
 	}
 	resp := httptest.NewRecorder()
 
-	err := encodeAssuredCall(ctx, resp, call)
+	err := encodeAssuredCall(context.TODO(), resp, call)
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusCreated, resp.Code)
@@ -321,16 +320,15 @@ func TestEncodeAssuredCalls(t *testing.T) {
 	resp := httptest.NewRecorder()
 	expected, err := ioutil.ReadFile("testdata/calls.json")
 	require.NoError(t, err)
-	err = encodeAssuredCall(ctx, resp, []*Call{testCall1(), testCall2(), testCall3()})
+	err = encodeAssuredCall(context.TODO(), resp, []*Call{testCall1(), testCall2(), testCall3()})
 
 	require.NoError(t, err)
-	require.Equal(t, "application/json", resp.HeaderMap.Get("Content-Type"))
+	require.Equal(t, "application/json", resp.Result().Header.Get("Content-Type"))
 	require.JSONEq(t, string(expected), resp.Body.String())
 }
 
 //go-rest-assured test vars
 var (
-	ctx   = context.Background()
 	verbs = []string{
 		http.MethodGet,
 		http.MethodHead,
@@ -340,11 +338,6 @@ var (
 		http.MethodDelete,
 		http.MethodConnect,
 		http.MethodOptions,
-	}
-	testSettings = Settings{
-		Logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
-		HTTPClient:     *http.DefaultClient,
-		TrackMadeCalls: true,
 	}
 	fullAssuredCalls = &CallStore{
 		data: map[string][]*Call{
