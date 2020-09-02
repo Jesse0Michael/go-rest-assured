@@ -39,6 +39,13 @@ func Test_applyOptions(t *testing.T) {
 			},
 		},
 		{
+			name:   "with host",
+			option: WithHost("rest-assured"),
+			want: Options{
+				host: "rest-assured",
+			},
+		},
+		{
 			name:   "with port",
 			option: WithPort(8889),
 			want: Options{

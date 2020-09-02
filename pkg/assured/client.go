@@ -42,9 +42,14 @@ func NewClient(opts ...Option) *Client {
 	return &c
 }
 
+// url returns the url to used by the client internally
+func (c *Client) url() string {
+	return fmt.Sprintf("http://%s:%d", c.host, c.Port)
+}
+
 // URL returns the url to use to test you stubbed endpoints
 func (c *Client) URL() string {
-	return fmt.Sprintf("http://localhost:%d/when", c.Port)
+	return fmt.Sprintf("%s/when", c.url())
 }
 
 // Close is used to close the running service
@@ -63,7 +68,7 @@ func (c *Client) Given(calls ...Call) error {
 		// Sanitize Path
 		call.Path = strings.Trim(call.Path, "/")
 
-		req, err := http.NewRequest(call.Method, fmt.Sprintf("http://localhost:%d/given/%s", c.Port, call.Path), bytes.NewReader(call.Response))
+		req, err := http.NewRequest(call.Method, fmt.Sprintf("%s/given/%s", c.url(), call.Path), bytes.NewReader(call.Response))
 		if err != nil {
 			return err
 		}
@@ -84,7 +89,7 @@ func (c *Client) Given(calls ...Call) error {
 			if callback.Target == "" {
 				return fmt.Errorf("cannot stub callback without target")
 			}
-			callbackReq, err := http.NewRequest(callback.Method, fmt.Sprintf("http://localhost:%d/callback", c.Port), bytes.NewReader(callback.Response))
+			callbackReq, err := http.NewRequest(callback.Method, fmt.Sprintf("%s/callback", c.url()), bytes.NewReader(callback.Response))
 			if err != nil {
 				return err
 			}
@@ -116,7 +121,7 @@ func (c *Client) Given(calls ...Call) error {
 
 // Verify returns all of the calls made against a stubbed method and path
 func (c *Client) Verify(method, path string) ([]Call, error) {
-	req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/verify/%s", c.Port, path), nil)
+	req, err := http.NewRequest(method, fmt.Sprintf("%s/verify/%s", c.url(), path), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +144,7 @@ func (c *Client) Verify(method, path string) ([]Call, error) {
 
 // Clear assured calls for a Method and Path
 func (c *Client) Clear(method, path string) error {
-	req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/clear/%s", c.Port, path), nil)
+	req, err := http.NewRequest(method, fmt.Sprintf("%s/clear/%s", c.url(), path), nil)
 	if err != nil {
 		return err
 	}
@@ -149,7 +154,7 @@ func (c *Client) Clear(method, path string) error {
 
 // ClearAll clears all assured calls
 func (c *Client) ClearAll() error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("http://localhost:%d/clear", c.Port), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/clear", c.url()), nil)
 	if err != nil {
 		return err
 	}
