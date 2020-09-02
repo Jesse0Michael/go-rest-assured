@@ -10,6 +10,7 @@ import (
 var DefaultOptions = Options{
 	logger:         kitlog.NewNopLogger(),
 	httpClient:     http.DefaultClient,
+	host:           "localhost",
 	trackMadeCalls: true,
 }
 
@@ -27,6 +28,9 @@ type Options struct {
 
 	// httpClient used to interact with the rest assured server
 	httpClient *http.Client
+
+	// set the hostname to use in the client. Defaults to localhost.
+	host string
 
 	// port for the rest assured server to listen on. Defaults to any available port.
 	Port int
@@ -53,6 +57,13 @@ func WithLogger(l kitlog.Logger) Option {
 func WithHTTPClient(c http.Client) Option {
 	return func(o *Options) {
 		o.httpClient = &c
+	}
+}
+
+// WithHost sets the host option.
+func WithHost(h string) Option {
+	return func(o *Options) {
+		o.host = h
 	}
 }
 
