@@ -44,7 +44,11 @@ func NewClient(opts ...Option) *Client {
 
 // url returns the url to used by the client internally
 func (c *Client) url() string {
-	return fmt.Sprintf("http://%s:%d", c.host, c.Port)
+	schema := "http"
+	if c.tlsCertFile != "" && c.tlsKeyFile != "" {
+		schema = "https"
+	}
+	return fmt.Sprintf("%s://%s:%d", schema, c.host, c.Port)
 }
 
 // URL returns the url to use to test you stubbed endpoints

@@ -31,11 +31,14 @@ func main() {
 	port := flag.Int("port", 0, "a port to listen on. default automatically assigns a port.")
 	preload := flag.String("preload", "", "a file to parse preloaded calls from.")
 	trackMade := flag.Bool("track", true, "a flag to enable the storing of calls made to the service.")
+	host := flag.String("host", "localhost", "a host to use in the client's url.")
+	tlsCert := flag.String("tlsCert", "", "location of tls cert for serving https traffic. tlsKey also required, if specified.")
+	tlsKey := flag.String("tlsKey", "", "location of tls key for serving https traffic. tlsCert also required, if specified")
 
 	flag.Parse()
 
 	client := assured.NewClient(assured.WithContext(rootCtx), assured.WithPort(*port),
-		assured.WithCallTracking(*trackMade), assured.WithLogger(logger))
+		assured.WithCallTracking(*trackMade), assured.WithLogger(logger), assured.WithHost(*host), assured.WithTLS(*tlsCert, *tlsKey))
 
 	// If preload file specified, parse the file and load all calls into the assured client
 	if *preload != "" {

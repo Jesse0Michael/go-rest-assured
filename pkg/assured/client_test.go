@@ -109,6 +109,38 @@ func TestClient(t *testing.T) {
 	require.Nil(t, calls)
 }
 
+func TestClientTLS(t *testing.T) {
+	client := NewClient(WithTLS("testdata/localhost.pem", "testdata/localhost-key.pem"), WithPort(9092))
+	time.Sleep(1 * time.Second)
+	require.Len(t, client.Errc, 0)
+
+	url := client.URL()
+	require.Equal(t, "https://localhost:9092/when", url)
+	require.NoError(t, client.Given(*testCall1()))
+
+	req, err := http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
+	require.NoError(t, err)
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	body, err := ioutil.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Equal(t, []byte(`{"assured": true}`), body)
+
+	calls, err := client.Verify("GET", "test/assured")
+	require.NoError(t, err)
+	require.Equal(t, []Call{
+		{
+			Method:     "GET",
+			Path:       "test/assured",
+			StatusCode: 200,
+			Response:   []byte(`{"calling":"you"}`),
+			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/2.0", "Accept-Encoding": "gzip"},
+		},
+	}, calls)
+}
+
 func TestClientCallbacks(t *testing.T) {
 	httpClient := http.Client{}
 	called := false

@@ -35,6 +35,12 @@ type Options struct {
 	// port for the rest assured server to listen on. Defaults to any available port.
 	Port int
 
+	// tlsCertFile is the location of the tls cert for serving https.
+	tlsCertFile string
+
+	// tlsKeyFile is the location of the tls key for serving https.
+	tlsKeyFile string
+
 	// trackMadeCalls toggles storing the requests made against the rest assured server. Defaults to true.
 	trackMadeCalls bool
 }
@@ -71,6 +77,14 @@ func WithHost(h string) Option {
 func WithPort(p int) Option {
 	return func(o *Options) {
 		o.Port = p
+	}
+}
+
+// WithTLS sets the tls options.
+func WithTLS(cert, key string) Option {
+	return func(o *Options) {
+		o.tlsCertFile = cert
+		o.tlsKeyFile = key
 	}
 }
 

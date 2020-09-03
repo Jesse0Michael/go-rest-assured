@@ -39,7 +39,11 @@ func (c *Client) startApplicationHTTPListener() {
 
 		router := c.createApplicationRouter()
 		_ = c.logger.Log("message", "starting go rest assured", "port", c.Port)
-		c.Errc <- http.Serve(listen, handlers.RecoveryHandler()(router))
+		if c.tlsCertFile != "" && c.tlsKeyFile != "" {
+			c.Errc <- http.ServeTLS(listen, handlers.RecoveryHandler()(router), c.tlsCertFile, c.tlsKeyFile)
+		} else {
+			c.Errc <- http.Serve(listen, handlers.RecoveryHandler()(router))
+		}
 	}()
 }
 
