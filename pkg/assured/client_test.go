@@ -2,6 +2,7 @@ package assured
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -110,7 +111,11 @@ func TestClient(t *testing.T) {
 }
 
 func TestClientTLS(t *testing.T) {
-	client := NewClient(WithTLS("testdata/localhost.pem", "testdata/localhost-key.pem"), WithPort(9092))
+	insecureClient := http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
+	client := NewClient(WithTLS("testdata/localhost.pem", "testdata/localhost-key.pem"), WithPort(9092),
+		WithHTTPClient(insecureClient))
 	time.Sleep(1 * time.Second)
 	require.Len(t, client.Errc, 0)
 
@@ -121,7 +126,7 @@ func TestClientTLS(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
 	require.NoError(t, err)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := insecureClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	body, err := ioutil.ReadAll(resp.Body)
@@ -136,7 +141,7 @@ func TestClientTLS(t *testing.T) {
 			Path:       "test/assured",
 			StatusCode: 200,
 			Response:   []byte(`{"calling":"you"}`),
-			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/2.0", "Accept-Encoding": "gzip"},
+			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 		},
 	}, calls)
 }
