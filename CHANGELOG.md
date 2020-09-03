@@ -1,3 +1,26 @@
+# [3.0.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.11...v3.0.0) (2020-09-03)
+
+### Chores
+
+- update dependencies ([08ad385](https://github.com/Jesse0Michael/go-rest-assured/commit/08ad385b1017e432db395e0f6501b8d62d74e223))
+- update for v3 ([d298cc7](https://github.com/Jesse0Michael/go-rest-assured/commit/d298cc76b2c0966fa7eb3572eaa0f5f9f60eefc4))
+
+### Features
+
+- add host option ([6490699](https://github.com/Jesse0Michael/go-rest-assured/commit/649069963e5aeaef88ef649d3eb5eecf43e3a5ce))
+- add tls option ([1213d71](https://github.com/Jesse0Michael/go-rest-assured/commit/1213d718729e63536a59d886745c09d173293999))
+- remove logger arg ([82f431c](https://github.com/Jesse0Michael/go-rest-assured/commit/82f431cd2b9a95a63b7f08c2cb3d0e5df83d1bc5))
+- use functional options ([dedd374](https://github.com/Jesse0Michael/go-rest-assured/commit/dedd374b9b076a5194f70a4fabb2652614804c9f))
+
+### Tests
+
+- fix tls test ([93236a1](https://github.com/Jesse0Michael/go-rest-assured/commit/93236a163aead07bcb80c3e2f00f63f127591b91))
+
+### BREAKING CHANGE
+
+- remove logger option, if you want to redirect your logs in a file, use the appropriate cli commands
+- Use funcional options with sane defaults for configuring the assured client instead of a settings struct
+
 ## [2.0.11](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.10...v2.0.11) (2020-09-01)
 
 ### Continuous Integration
