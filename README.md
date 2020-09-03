@@ -19,7 +19,7 @@ Set these fields as a _Given_ call through the client or a HTTP request to the s
 
 If loading callbacks from a JSON file, the call [unmarshaller](pkg/assured/call.go) will attempt to read the resource field as a relative file, or else a quoted string, or else just a byte slice.
 
-To understand how rest assured is working behind the scenes, or to use rest assured as a standalone application you can run from a command line and use anywhere, read the application [README](cmd/assured/README.md)
+To understand how rest assured is working behind the scenes, or to use rest assured as a standalone application you can run from a command line and use anywhere, or how to serve HTTPS traffic from rest assured, read the application [README](cmd/assured/README.md)
 
 ### Client
 

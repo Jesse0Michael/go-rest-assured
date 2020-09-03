@@ -6,19 +6,25 @@ Go Rest Assured can be used from the command line to spin up a mock rest api. Th
 
 1. `go get github.com/jesse0michael/go-rest-assured/cmd/go-assured`
 
-```bash
+```
 Usage of go-assured:
-  -logger string
-    	a file to send logs. default logs to STDOUT.
+  -host string
+        a host to use in the client's url. (default "localhost")
   -port int
-    	a port to listen on. default automatically assigns a port.
+        a port to listen on. default automatically assigns a port.
   -preload string
-    	a file to parse preloaded calls from.
+        a file to parse preloaded calls from.
+  -tlsCert string
+        location of tls cert for serving https traffic. tlsKey also required, if specified.
+  -tlsKey string
+        location of tls key for serving https traffic. tlsCert also required, if specified
   -track
-    	a flag to enable the storing of calls made to the service. (default true)
+        a flag to enable the storing of calls made to the service. (default true)
 ```
 
 To load in a default set of stubbed endpoints from a file, follow the [Preload API Reference](preload_reference.md) guide.
+
+You can specify a TLS cert/key to mock out HTTPS traffic. View the [docker-compose](../../build/docker-compose.yml) example to see how you can load TLS certs using [mkcert](https://github.com/FiloSottile/mkcert) self signed certs and mock HTTPS traffic.
 
 ## Stubbing
 
