@@ -1,6 +1,6 @@
-module github.com/jesse0michael/go-rest-assured
+module github.com/jesse0michael/go-rest-assured/v3
 
-go 1.14
+go 1.16
 
 require (
 	github.com/go-kit/kit v0.10.0

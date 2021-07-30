@@ -11,7 +11,7 @@ import (
 	"syscall"
 
 	kitlog "github.com/go-kit/kit/log"
-	"github.com/jesse0michael/go-rest-assured/pkg/assured"
+	"github.com/jesse0michael/go-rest-assured/v3/pkg/assured"
 )
 
 // Preload is the expected format for preloading assured endpoints through the go rest assured application
