@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.0.0...v3.0.1) (2021-07-30)
+
+### Bug Fixes
+
+- update go mod for v3 ([467b9e5](https://github.com/Jesse0Michael/go-rest-assured/commit/467b9e539cedefb0a0563e3a55a2697c44865367))
+
 # [3.0.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v2.0.11...v3.0.0) (2020-09-03)
 
 ### Chores
