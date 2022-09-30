@@ -211,7 +211,7 @@ func TestWhenEndpointSuccessCallbacks(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, assured, c)
 	// allow go routine to finish
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 	require.True(t, called, "callback was not hit")
 }
 
