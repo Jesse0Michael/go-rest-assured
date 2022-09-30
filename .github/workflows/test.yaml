@@ -6,7 +6,7 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
-    container: golang:1.14-alpine
+    container: golang:1.19-alpine
     env:
       CGO_ENABLED: 0
     steps:
