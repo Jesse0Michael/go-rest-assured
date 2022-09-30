@@ -1,10 +1,5 @@
 FROM golang:1.19-alpine AS build
 
-# Install git + SSL ca certificates.
-# Git is required for fetching the dependencies.
-# Ca-certificates is required to call HTTPS endpoints.
-RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
-
 # Copy project files
 WORKDIR /go/src
 COPY go.mod .
@@ -19,16 +14,13 @@ COPY . .
 RUN go mod download
 RUN go mod verify
 
-# Build project
+# Build GO binary
 ENV CGO_ENABLED=0
 RUN go build -o go-rest-assured ./cmd/go-assured
 
-FROM scratch AS runtime
+# Build final application
+FROM gcr.io/distroless/static AS app
 
-# Copy dependent files
 COPY --from=build /go/src/go-rest-assured ./
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
-EXPOSE 8080/tcp
 
 ENTRYPOINT ["./go-rest-assured"]
