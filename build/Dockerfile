@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine AS build
+FROM golang:1.19-alpine AS build
 
 # Install git + SSL ca certificates.
 # Git is required for fetching the dependencies.
