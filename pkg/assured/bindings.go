@@ -17,6 +17,7 @@ import (
 
 const (
 	AssuredStatus         = "Assured-Status"
+	AssuredMethod         = "Assured-Method"
 	AssuredDelay          = "Assured-Delay"
 	AssuredCallbackKey    = "Assured-Callback-Key"
 	AssuredCallbackTarget = "Assured-Callback-Target"
@@ -128,9 +129,14 @@ func (c *Client) createApplicationRouter() *mux.Router {
 // decodeAssuredCall converts an http request into an assured Call object
 func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, error) {
 	urlParams := mux.Vars(req)
+	method := req.Method
+	if m := req.Header.Get(AssuredMethod); m != "" {
+		method = m
+	}
+
 	ac := Call{
 		Path:       urlParams["path"],
-		Method:     req.Method,
+		Method:     method,
 		StatusCode: http.StatusOK,
 	}
 

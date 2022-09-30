@@ -31,7 +31,7 @@ You can specify a TLS cert/key to mock out HTTPS traffic using [mkcert](https://
 To stub out an assured call hit the following endpoint
 `/given/{path:.*}`
 
-The HTTP Method you use will be stored in the Assured Call
+The HTTP Method you use will be stored in the Assured Call unless you specify a `"Assured-Method": "[a-zA-Z]+"` HTTP Header.
 
 The Request Body, if present, will be stored in the Assured Call
 
