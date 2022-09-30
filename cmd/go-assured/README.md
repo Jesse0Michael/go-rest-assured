@@ -24,7 +24,7 @@ Usage of go-assured:
 
 To load in a default set of stubbed endpoints from a file, follow the [Preload API Reference](preload_reference.md) guide.
 
-You can specify a TLS cert/key to mock out HTTPS traffic. View the [docker-compose](../../build/docker-compose.yml) example to see how you can load TLS certs using [mkcert](https://github.com/FiloSottile/mkcert) self signed certs and mock HTTPS traffic.
+You can specify a TLS cert/key to mock out HTTPS traffic using [mkcert](https://github.com/FiloSottile/mkcert) self signed certs and mock HTTPS traffic.
 
 ## Stubbing
 
@@ -96,7 +96,7 @@ This endpoint returns a list of assured calls made against the matching Method/P
 
 ## Clearing
 
-To clear out the stubbed and made calls for a specific Method/Path, use the endpoint `/clear/{path:.*}`
+To clear out the stubbed and made calls for a specific Method/Path, use the endpoint DELETE `/clear/{path:.*}`
 _Including the HTTP Header `Assured-Callback-Key` will clear all callbacks associated with that key (independent of path)_
 
 To clear out all stubbed calls on the server, use the endpoint `/clear`
