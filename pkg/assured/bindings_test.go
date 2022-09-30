@@ -191,6 +191,35 @@ func TestDecodeAssuredCallStatus(t *testing.T) {
 	require.True(t, decoded, "decode method was not hit")
 }
 
+func TestDecodeAssuredCallMethod(t *testing.T) {
+	decoded := false
+	expected := &Call{
+		Path:       "test/assured",
+		StatusCode: http.StatusOK,
+		Method:     http.MethodDelete,
+		Headers:    map[string]string{"Assured-Method": "DELETE"},
+		Query:      map[string]string{},
+	}
+	testDecode := func(resp http.ResponseWriter, req *http.Request) {
+		c, err := decodeAssuredCall(context.TODO(), req)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, c)
+		decoded = true
+	}
+
+	req, err := http.NewRequest(http.MethodGet, "/given/test/assured", nil)
+	require.NoError(t, err)
+	req.Header.Set("Assured-Method", "DELETE")
+
+	router := mux.NewRouter()
+	router.HandleFunc("/given/{path:.*}", testDecode).Methods(http.MethodGet)
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.True(t, decoded, "decode method was not hit")
+}
+
 func TestDecodeAssuredCallStatusFailure(t *testing.T) {
 	decoded := false
 	expected := &Call{
