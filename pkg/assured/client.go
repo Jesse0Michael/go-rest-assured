@@ -133,6 +133,7 @@ func (c *Client) Verify(method, path string) ([]Call, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(req)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failure to verify calls")

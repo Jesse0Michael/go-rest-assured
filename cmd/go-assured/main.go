@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
@@ -42,12 +41,7 @@ func main() {
 
 	// If preload file specified, parse the file and load all calls into the assured client
 	if *preload != "" {
-		file, err := os.Open(*preload)
-		if err != nil {
-			_ = logger.Log("fatal", err.Error())
-			os.Exit(1)
-		}
-		b, err := ioutil.ReadAll(file)
+		b, err := os.ReadFile(*preload)
 		if err != nil {
 			_ = logger.Log("fatal", err.Error())
 			os.Exit(1)

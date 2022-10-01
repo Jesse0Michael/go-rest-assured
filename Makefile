@@ -13,10 +13,11 @@ docker-build:
 	docker build -f ./build/Dockerfile -t go-rest-assured:$(GITSHA) .
 fmt:
 	go mod tidy
-	gofmt -w -l -s *.go
+	gofmt -w -l -s .
+	golangci-lint run ./...
 assert-no-diff:
 	test -z "$(shell git status --porcelain)"
-test:
+test: fmt
 	if [ ! -d $(COVERAGEDIR) ]; then mkdir $(COVERAGEDIR); fi
 	go test -v ./pkg/... -cover -coverprofile=$(COVERAGEDIR)/assured.coverprofile
 cover:

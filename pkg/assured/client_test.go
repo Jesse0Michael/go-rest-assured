@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -31,7 +31,7 @@ func TestClient(t *testing.T) {
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, []byte(`{"assured": true}`), body)
 
@@ -41,7 +41,7 @@ func TestClient(t *testing.T) {
 	resp, err = http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusConflict, resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, []byte("error"), body)
 
@@ -51,7 +51,7 @@ func TestClient(t *testing.T) {
 	resp, err = http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusTeapot, resp.StatusCode)
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, []byte{}, body)
 
@@ -129,7 +129,7 @@ func TestClientTLS(t *testing.T) {
 	resp, err := insecureClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, []byte(`{"assured": true}`), body)
 
@@ -151,14 +151,14 @@ func TestClientCallbacks(t *testing.T) {
 	called := false
 	delayCalled := false
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		require.NoError(t, err)
 		require.Equal(t, []byte(`{"done":"here"}`), body)
 		require.NotEmpty(t, r.Header.Get("x-info"))
 		called = true
 	}))
 	delayTestServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		require.NoError(t, err)
 		require.Equal(t, []byte(`{"wait":"there's more"}`), body)
 		delayCalled = true

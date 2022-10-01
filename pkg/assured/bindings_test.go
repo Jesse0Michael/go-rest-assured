@@ -3,9 +3,9 @@ package assured
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gorilla/mux"
@@ -318,7 +318,7 @@ func TestEncodeAssuredCall(t *testing.T) {
 
 func TestEncodeAssuredCalls(t *testing.T) {
 	resp := httptest.NewRecorder()
-	expected, err := ioutil.ReadFile("testdata/calls.json")
+	expected, err := os.ReadFile("testdata/calls.json")
 	require.NoError(t, err)
 	err = encodeAssuredCall(context.TODO(), resp, []*Call{testCall1(), testCall2(), testCall3()})
 
@@ -327,7 +327,7 @@ func TestEncodeAssuredCalls(t *testing.T) {
 	require.JSONEq(t, string(expected), resp.Body.String())
 }
 
-//go-rest-assured test vars
+// go-rest-assured test vars
 var (
 	verbs = []string{
 		http.MethodGet,

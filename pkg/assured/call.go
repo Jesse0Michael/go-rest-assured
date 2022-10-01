@@ -3,7 +3,6 @@ package assured
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -52,7 +51,7 @@ func (response *CallResponse) UnmarshalJSON(data []byte) error {
 		absPath, _ := filepath.Abs(s)
 		if _, err := os.Stat(absPath); err == nil {
 			// The data is a path that exists, therefore we will read the file
-			if file, err := ioutil.ReadFile(absPath); err == nil {
+			if file, err := os.ReadFile(absPath); err == nil {
 				*response = file
 				return nil
 			}

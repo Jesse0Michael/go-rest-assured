@@ -98,7 +98,7 @@ func (a *AssuredEndpoints) VerifyEndpoint(ctx context.Context, call *Call) (inte
 	return nil, errors.New("Tracking made calls is disabled")
 }
 
-//ClearEndpoint is used to clear a specific assured call
+// ClearEndpoint is used to clear a specific assured call
 func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	a.assuredCalls.Clear(call.ID())
 	a.madeCalls.Clear(call.ID())
@@ -111,7 +111,7 @@ func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (inter
 	return nil, nil
 }
 
-//ClearAllEndpoint is used to clear all assured calls
+// ClearAllEndpoint is used to clear all assured calls
 func (a *AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) (interface{}, error) {
 	a.assuredCalls.ClearAll()
 	a.madeCalls.ClearAll()
@@ -121,7 +121,7 @@ func (a *AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) 
 	return nil, nil
 }
 
-//sendCallback sends a given callback to its target
+// sendCallback sends a given callback to its target
 func (a *AssuredEndpoints) sendCallback(target string, call *Call) {
 	var delay int64
 	if delayOverride, err := strconv.ParseInt(call.Headers[AssuredCallbackDelay], 10, 64); err == nil {
