@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -156,7 +156,7 @@ func decodeAssuredCall(ctx context.Context, req *http.Request) (interface{}, err
 	// Set response body
 	if req.Body != nil {
 		defer req.Body.Close()
-		if bytes, err := ioutil.ReadAll(req.Body); err == nil {
+		if bytes, err := io.ReadAll(req.Body); err == nil {
 			ac.Response = bytes
 		}
 	}
@@ -189,7 +189,7 @@ func decodeAssuredCallback(ctx context.Context, req *http.Request) (interface{},
 	// Set response body
 	if req.Body != nil {
 		defer req.Body.Close()
-		if bytes, err := ioutil.ReadAll(req.Body); err == nil {
+		if bytes, err := io.ReadAll(req.Body); err == nil {
 			ac.Response = bytes
 		}
 	}

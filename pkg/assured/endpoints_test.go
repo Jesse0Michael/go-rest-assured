@@ -2,7 +2,7 @@ package assured
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -313,7 +313,7 @@ func TestVerifyEndpointTrackingDisabled(t *testing.T) {
 
 func TestClearEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		logger:         kitlog.NewLogfmtLogger(io.Discard),
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      fullAssuredCalls,
 		callbackCalls:  NewCallStore(),
@@ -347,7 +347,7 @@ func TestClearEndpointSuccess(t *testing.T) {
 
 func TestClearEndpointSuccessCallback(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:       kitlog.NewLogfmtLogger(ioutil.Discard),
+		logger:       kitlog.NewLogfmtLogger(io.Discard),
 		assuredCalls: fullAssuredCalls,
 		madeCalls:    NewCallStore(),
 		callbackCalls: &CallStore{
@@ -370,7 +370,7 @@ func TestClearEndpointSuccessCallback(t *testing.T) {
 
 func TestClearAllEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         kitlog.NewLogfmtLogger(ioutil.Discard),
+		logger:         kitlog.NewLogfmtLogger(io.Discard),
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      fullAssuredCalls,
 		callbackCalls:  fullAssuredCalls,
