@@ -1,3 +1,13 @@
+# [3.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.0.2...v3.1.0) (2022-10-05)
+
+### Documentation
+
+- update documentation ([1b04b01](https://github.com/Jesse0Michael/go-rest-assured/commit/1b04b01208f670195efce904b2528414eda162cc))
+
+### Features
+
+- add Assured-Method header option ([84e7754](https://github.com/Jesse0Michael/go-rest-assured/commit/84e7754716b11e05d91ef3eccd4d5be0eeb61eab))
+
 ## [3.0.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.0.1...v3.0.2) (2022-10-05)
 
 ### Build System
