@@ -1,3 +1,22 @@
+## [3.0.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.0.1...v3.0.2) (2022-10-05)
+
+### Build System
+
+- build image from static image ([4c29aa3](https://github.com/Jesse0Michael/go-rest-assured/commit/4c29aa35398873ec13afa400650aa6d7499859cd))
+- update to go 1.19 ([2ed0296](https://github.com/Jesse0Michael/go-rest-assured/commit/2ed0296a95db1506af7fa78a476727368e960a0c))
+
+### Chores
+
+- update with linter suggestions ([7401f6f](https://github.com/Jesse0Michael/go-rest-assured/commit/7401f6f8b5f94a1bdb237ded38d004e6a8cef9ef))
+
+### Continuous Integration
+
+- update ci actions ([47efa38](https://github.com/Jesse0Michael/go-rest-assured/commit/47efa3886c007830def26aec4887c7b543b22292))
+
+### Tests
+
+- add time for async test ([30dea25](https://github.com/Jesse0Michael/go-rest-assured/commit/30dea2540a8668ad5dcc7078efd1615145bcae71))
+
 ## [3.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.0.0...v3.0.1) (2021-07-30)
 
 ### Bug Fixes
