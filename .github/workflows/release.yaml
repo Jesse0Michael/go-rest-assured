@@ -15,11 +15,11 @@ jobs:
       - name: Build
         run: |
           docker build --file ./build/Dockerfile \
-            -t docker.pkg.github.com/jesse0michael/go-rest-assured:${REF##*/} \
-            -t docker.pkg.github.com/jesse0michael/go-rest-assured .
+            -t docker.pkg.github.com/jesse0michael/go-rest-assured/assured:${REF##*/} \
+            -t docker.pkg.github.com/jesse0michael/go-rest-assured/assured .
 
       - name: Push
         run: |
           docker login docker.pkg.github.com -u Jesse0Michael -p ${{ secrets.PAT }}
-          docker push docker.pkg.github.com/jesse0michael/go-rest-assured:${REF##*/}
-          docker push docker.pkg.github.com/jesse0michael/go-rest-assured
+          docker push docker.pkg.github.com/jesse0michael/go-rest-assured/assured:${REF##*/}
+          docker push docker.pkg.github.com/jesse0michael/go-rest-assured/assured
