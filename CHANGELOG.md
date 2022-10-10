@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.1.0...v3.1.1) (2022-10-10)
+
+### Continuous Integration
+
+- update docker publish ([6d8f225](https://github.com/Jesse0Michael/go-rest-assured/commit/6d8f2259b1c9778aeb742f932c81fec781790180))
+
 # [3.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.0.2...v3.1.0) (2022-10-05)
 
 ### Documentation
