@@ -1,3 +1,9 @@
+## [3.1.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.1.1...v3.1.2) (2022-10-10)
+
+### Continuous Integration
+
+- publish with image name ([8e22407](https://github.com/Jesse0Michael/go-rest-assured/commit/8e22407fb93d6ad3a7742bb2e03a7295cc600e4b))
+
 ## [3.1.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.1.0...v3.1.1) (2022-10-10)
 
 ### Continuous Integration
