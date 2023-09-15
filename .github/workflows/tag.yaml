@@ -14,5 +14,7 @@ jobs:
 
       - name: Semantic Release
         uses: ridedott/release-me-action@master
+        with:
+          release-branches: '["main"]'
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
