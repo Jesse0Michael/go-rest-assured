@@ -117,7 +117,6 @@ func TestClientTLS(t *testing.T) {
 	client := NewClient(WithTLS("testdata/localhost.pem", "testdata/localhost-key.pem"), WithPort(9092),
 		WithHTTPClient(insecureClient))
 	time.Sleep(1 * time.Second)
-	require.Len(t, client.Errc, 0)
 
 	url := client.URL()
 	require.Equal(t, "https://localhost:9092/when", url)

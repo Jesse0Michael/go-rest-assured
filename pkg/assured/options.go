@@ -1,7 +1,6 @@
 package assured
 
 import (
-	"context"
 	"net/http"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -19,10 +18,6 @@ type Option func(*Options)
 
 // Options can be used to configure the rest assured client.
 type Options struct {
-	// ctx to pass to the rest assured server
-	ctx    context.Context
-	cancel context.CancelFunc //nolint:structcheck
-
 	// logger used by the rest assured client
 	logger kitlog.Logger
 
@@ -43,13 +38,6 @@ type Options struct {
 
 	// trackMadeCalls toggles storing the requests made against the rest assured server. Defaults to true.
 	trackMadeCalls bool
-}
-
-// WithContext sets the context option.
-func WithContext(c context.Context) Option {
-	return func(o *Options) {
-		o.ctx = c
-	}
 }
 
 // WithLogger sets the logger to be used.
