@@ -1,6 +1,6 @@
 module github.com/jesse0michael/go-rest-assured/v4
 
-go 1.19
+go 1.21
 
 require (
 	github.com/go-kit/kit v0.10.0
