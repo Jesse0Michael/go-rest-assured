@@ -17,6 +17,8 @@ import (
 
 func TestClient(t *testing.T) {
 	client := NewClient(WithPort(9091))
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 	time.Sleep(time.Second)
 
 	url := client.URL()
@@ -116,6 +118,8 @@ func TestClientTLS(t *testing.T) {
 	}}
 	client := NewClient(WithTLS("testdata/localhost.pem", "testdata/localhost-key.pem"), WithPort(9092),
 		WithHTTPClient(insecureClient))
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 	time.Sleep(1 * time.Second)
 
 	url := client.URL()
@@ -163,6 +167,8 @@ func TestClientCallbacks(t *testing.T) {
 		delayCalled = true
 	}))
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 	time.Sleep(time.Second)
 
 	require.NoError(t, client.Given(Call{
@@ -203,7 +209,9 @@ func TestClientCallbacks(t *testing.T) {
 
 func TestClientClose(t *testing.T) {
 	client := NewClient()
+	go func() { _ = client.Serve() }()
 	client2 := NewClient()
+	go func() { _ = client2.Serve() }()
 	time.Sleep(time.Second)
 
 	require.NotEqual(t, client.URL(), client2.URL())
@@ -228,6 +236,8 @@ func TestClientClose(t *testing.T) {
 
 func TestClientGivenNoMethod(t *testing.T) {
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 	time.Sleep(time.Second)
 
 	err := client.Given(Call{Path: "NoMethodMan"})
@@ -249,6 +259,8 @@ func TestClientGivenCallbackMissingTarget(t *testing.T) {
 		},
 	}
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 
 	err := client.Given(call)
 
@@ -264,6 +276,8 @@ func TestClientGivenCallbackBadMethod(t *testing.T) {
 		},
 	}
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 
 	err := client.Given(call)
 
@@ -273,6 +287,8 @@ func TestClientGivenCallbackBadMethod(t *testing.T) {
 
 func TestClientBadRequestFailure(t *testing.T) {
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 
 	err := client.Given(Call{Method: "\"", Path: "goat/path"})
 
@@ -304,6 +320,7 @@ func TestClientBadRequestFailure(t *testing.T) {
 
 func TestClientVerifyHttpClientFailure(t *testing.T) {
 	client := NewClient()
+	go func() { _ = client.Serve() }()
 	client.Close()
 
 	calls, err := client.Verify("GONE", "not/started")
@@ -315,6 +332,8 @@ func TestClientVerifyHttpClientFailure(t *testing.T) {
 
 func TestClientVerifyResponseFailure(t *testing.T) {
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -333,6 +352,8 @@ func TestClientVerifyResponseFailure(t *testing.T) {
 
 func TestClientVerifyBodyFailure(t *testing.T) {
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode("ydob+dab")
@@ -352,6 +373,8 @@ func TestClientVerifyBodyFailure(t *testing.T) {
 
 func TestClientPathSanitization(t *testing.T) {
 	client := NewClient()
+	go func() { _ = client.Serve() }()
+	defer client.Close()
 	time.Sleep(time.Second)
 
 	require.NoError(t, client.Given(Call{Method: "GET", Path: "///yoyo/path///", StatusCode: http.StatusAccepted}))
