@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -32,11 +33,35 @@ func NewClient(opts ...Option) *Client {
 	c.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", c.Options.Port))
 	if err != nil {
 		slog.With("error", err, "port", c.Options.Port).Error("unable to create http listener")
+	} else {
+		c.Options.Port = c.listener.Addr().(*net.TCPAddr).Port
 	}
 
-	c.Options.Port = c.listener.Addr().(*net.TCPAddr).Port
 	c.router = c.createApplicationRouter()
 	return &c
+}
+
+// NewClient creates a new go-rest-assured client and starts serving traffic
+func NewClientServe(opts ...Option) *Client {
+	client := NewClient(opts...)
+	go func() {
+		_ = client.Serve()
+	}()
+
+	return client
+}
+
+// Serve starts the Rest Assured client to begin listening on the application endpoints
+func (c *Client) Serve() error {
+	if c.listener == nil {
+		return fmt.Errorf("invalid client")
+	}
+
+	if c.tlsCertFile != "" && c.tlsKeyFile != "" {
+		return http.ServeTLS(c.listener, handlers.RecoveryHandler()(c.router), c.tlsCertFile, c.tlsKeyFile)
+	} else {
+		return http.Serve(c.listener, handlers.RecoveryHandler()(c.router))
+	}
 }
 
 // url returns the url to used by the client internally
