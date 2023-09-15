@@ -1,3 +1,9 @@
+## [4.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.0...v4.0.1) (2023-09-15)
+
+### Build System
+
+- move docker labels ([be7180e](https://github.com/Jesse0Michael/go-rest-assured/commit/be7180eeffa882731ade7397e8660d7c738de932))
+
 # [3.2.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.1.2...v3.2.0) (2023-09-15)
 
 ### Bug Fixes
