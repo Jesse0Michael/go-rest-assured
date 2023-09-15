@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,28 +23,14 @@ const (
 	AssuredCallbackDelay  = "Assured-Callback-Delay"
 )
 
-// startApplicationHTTPListener creates a Go-routine that has an HTTP listener for the application endpoints
-func (c *Client) startApplicationHTTPListener() {
-	go func() {
-		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Port))
-		if err != nil {
-			c.Errc <- err
-			return
-		}
-
-		go func() {
-			<-c.ctx.Done()
-			listen.Close()
-		}()
-
-		router := c.createApplicationRouter()
-		_ = c.logger.Log("message", "starting go rest assured", "port", c.Port)
-		if c.tlsCertFile != "" && c.tlsKeyFile != "" {
-			c.Errc <- http.ServeTLS(listen, handlers.RecoveryHandler()(router), c.tlsCertFile, c.tlsKeyFile)
-		} else {
-			c.Errc <- http.Serve(listen, handlers.RecoveryHandler()(router))
-		}
-	}()
+// Serve starts the Rest Assured client to begin listening on the application endpoints
+func (c *Client) Serve() error {
+	_ = c.logger.Log("message", "starting go rest assured", "port", c.Port)
+	if c.tlsCertFile != "" && c.tlsKeyFile != "" {
+		return http.ServeTLS(c.listener, handlers.RecoveryHandler()(c.router), c.tlsCertFile, c.tlsKeyFile)
+	} else {
+		return http.Serve(c.listener, handlers.RecoveryHandler()(c.router))
+	}
 }
 
 // createApplicationRouter sets up the router that will handle all of the application routes

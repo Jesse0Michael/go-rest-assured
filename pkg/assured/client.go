@@ -2,7 +2,6 @@ package assured
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -10,35 +9,32 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/pborman/uuid"
 )
 
 // Client
 type Client struct {
-	Errc chan error
 	Options
+	listener net.Listener
+	router   *mux.Router
 }
 
 // NewClient creates a new go-rest-assured client
 func NewClient(opts ...Option) *Client {
 	c := Client{
-		Errc:    make(chan error),
 		Options: DefaultOptions,
 	}
 	c.Options.applyOptions(opts...)
 
-	if c.ctx == nil {
-		c.ctx = context.Background()
+	var err error
+	c.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", c.Options.Port))
+	if err != nil {
+		_ = c.logger.Log("error", err.Error())
 	}
-	c.ctx, c.cancel = context.WithCancel(c.Options.ctx)
 
-	if c.Options.Port == 0 {
-		if listen, err := net.Listen("tcp", ":0"); err == nil {
-			c.Options.Port = listen.Addr().(*net.TCPAddr).Port
-			listen.Close()
-		}
-	}
-	c.startApplicationHTTPListener()
+	c.Options.Port = c.listener.Addr().(*net.TCPAddr).Port
+	c.router = c.createApplicationRouter()
 	return &c
 }
 
@@ -57,8 +53,8 @@ func (c *Client) URL() string {
 }
 
 // Close is used to close the running service
-func (c *Client) Close() {
-	c.cancel()
+func (c *Client) Close() error {
+	return c.listener.Close()
 }
 
 // Given stubs assured Call(s)

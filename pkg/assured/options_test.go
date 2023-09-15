@@ -1,7 +1,6 @@
 package assured
 
 import (
-	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -11,19 +10,11 @@ import (
 
 func Test_applyOptions(t *testing.T) {
 	log := kitlog.NewNopLogger()
-	ctx := context.TODO()
 	tests := []struct {
 		name   string
 		option Option
 		want   Options
 	}{
-		{
-			name:   "with context",
-			option: WithContext(ctx),
-			want: Options{
-				ctx: ctx,
-			},
-		},
 		{
 			name:   "with logger",
 			option: WithLogger(log),

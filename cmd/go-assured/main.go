@@ -20,11 +20,12 @@ type Preload struct {
 
 func main() {
 	logger := kitlog.NewLogfmtLogger(os.Stdout)
-	rootCtx := context.Background()
 
-	errc := make(chan error)
+	ctx, cancel := context.WithCancelCause(context.Background())
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
-		errc <- interrupt()
+		cancel(fmt.Errorf("%s", <-sig))
 	}()
 
 	port := flag.Int("port", 0, "a port to listen on. default automatically assigns a port.")
@@ -36,8 +37,18 @@ func main() {
 
 	flag.Parse()
 
-	client := assured.NewClient(assured.WithContext(rootCtx), assured.WithPort(*port),
-		assured.WithCallTracking(*trackMade), assured.WithLogger(logger), assured.WithHost(*host), assured.WithTLS(*tlsCert, *tlsKey))
+	client := assured.NewClient(
+		assured.WithPort(*port),
+		assured.WithCallTracking(*trackMade),
+		assured.WithLogger(logger),
+		assured.WithHost(*host),
+		assured.WithTLS(*tlsCert, *tlsKey))
+
+	go func() {
+		if err := client.Serve(); err != nil {
+			_ = logger.Log("error", err.Error())
+		}
+	}()
 
 	// If preload file specified, parse the file and load all calls into the assured client
 	if *preload != "" {
@@ -58,11 +69,6 @@ func main() {
 		}
 	}
 
-	_ = logger.Log("fatal", <-errc)
-}
-
-func interrupt() error {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-	return fmt.Errorf("%s", <-c)
+	<-ctx.Done()
+	client.Close()
 }
