@@ -1,8 +1,5 @@
 FROM golang:1.21-alpine AS build
 
-LABEL org.opencontainers.image.source "https://github.com/jesse0michael/go-rest-assurede"
-LABEL org.opencontainers.image.description "Docker image for the GO Rest Assured client to mock and validate your calls to REST API's"
-
 # Copy project files
 WORKDIR /go/src
 COPY go.mod .
@@ -23,6 +20,9 @@ RUN go build -o go-rest-assured ./cmd/go-assured
 
 # Build final application
 FROM gcr.io/distroless/static AS app
+
+LABEL org.opencontainers.image.source "https://github.com/jesse0michael/go-rest-assured"
+LABEL org.opencontainers.image.description "Docker image for the GO Rest Assured client to mock and validate your calls to REST API's"
 
 COPY --from=build /go/src/go-rest-assured ./
 
