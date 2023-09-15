@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
-	kitlog "github.com/go-kit/kit/log"
 	"github.com/jesse0michael/go-rest-assured/v4/pkg/assured"
 )
 
@@ -19,8 +19,6 @@ type Preload struct {
 }
 
 func main() {
-	logger := kitlog.NewLogfmtLogger(os.Stdout)
-
 	ctx, cancel := context.WithCancelCause(context.Background())
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
@@ -40,13 +38,13 @@ func main() {
 	client := assured.NewClient(
 		assured.WithPort(*port),
 		assured.WithCallTracking(*trackMade),
-		assured.WithLogger(logger),
 		assured.WithHost(*host),
 		assured.WithTLS(*tlsCert, *tlsKey))
 
 	go func() {
+		slog.With("port", client.Port).Info("starting go rest assured client")
 		if err := client.Serve(); err != nil {
-			_ = logger.Log("error", err.Error())
+			slog.With("error", err).Info("rest assured server stopped serving")
 		}
 	}()
 
@@ -54,21 +52,22 @@ func main() {
 	if *preload != "" {
 		b, err := os.ReadFile(*preload)
 		if err != nil {
-			_ = logger.Log("fatal", err.Error())
-			os.Exit(1)
+			slog.With("error", err).Info("failed to read preload file")
+			cancel(err)
 		}
 		var preload Preload
 		// TODO response won't unmarshal string to []byte
 		if err := json.Unmarshal(b, &preload); err != nil {
-			_ = logger.Log("fatal", err.Error())
-			os.Exit(1)
+			slog.With("error", err).Info("failed to unmarshal preload file")
+			cancel(err)
 		}
 		if err = client.Given(preload.Calls...); err != nil {
-			_ = logger.Log("fatal", err.Error())
-			os.Exit(1)
+			slog.With("error", err).Info("failed to set given preload file calls")
+			cancel(err)
 		}
 	}
 
 	<-ctx.Done()
 	client.Close()
+	slog.Info("exiting go rest assured")
 }

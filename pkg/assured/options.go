@@ -2,12 +2,9 @@ package assured
 
 import (
 	"net/http"
-
-	kitlog "github.com/go-kit/kit/log"
 )
 
 var DefaultOptions = Options{
-	logger:         kitlog.NewNopLogger(),
 	httpClient:     http.DefaultClient,
 	host:           "localhost",
 	trackMadeCalls: true,
@@ -18,9 +15,6 @@ type Option func(*Options)
 
 // Options can be used to configure the rest assured client.
 type Options struct {
-	// logger used by the rest assured client
-	logger kitlog.Logger
-
 	// httpClient used to interact with the rest assured server
 	httpClient *http.Client
 
@@ -38,13 +32,6 @@ type Options struct {
 
 	// trackMadeCalls toggles storing the requests made against the rest assured server. Defaults to true.
 	trackMadeCalls bool
-}
-
-// WithLogger sets the logger to be used.
-func WithLogger(l kitlog.Logger) Option {
-	return func(o *Options) {
-		o.logger = l
-	}
 }
 
 // WithHTTPClient sets the http client option.

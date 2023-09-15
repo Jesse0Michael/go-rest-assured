@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"strconv"
@@ -30,7 +31,7 @@ func NewClient(opts ...Option) *Client {
 	var err error
 	c.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", c.Options.Port))
 	if err != nil {
-		_ = c.logger.Log("error", err.Error())
+		slog.With("error", err, "port", c.Options.Port).Error("unable to create http listener")
 	}
 
 	c.Options.Port = c.listener.Addr().(*net.TCPAddr).Port

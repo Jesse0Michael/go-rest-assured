@@ -2,19 +2,16 @@ package assured
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	kitlog "github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewAssuredEndpoints(t *testing.T) {
 	expected := &AssuredEndpoints{
-		logger:         kitlog.NewNopLogger(),
 		httpClient:     http.DefaultClient,
 		assuredCalls:   NewCallStore(),
 		madeCalls:      NewCallStore(),
@@ -120,7 +117,6 @@ func TestGivenCallbackEndpointSuccess(t *testing.T) {
 
 func TestWhenEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         DefaultOptions.logger,
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      NewCallStore(),
 		callbackCalls:  NewCallStore(),
@@ -153,7 +149,6 @@ func TestWhenEndpointSuccess(t *testing.T) {
 
 func TestWhenEndpointSuccessTrackingDisabled(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         DefaultOptions.logger,
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      NewCallStore(),
 		callbackCalls:  NewCallStore(),
@@ -194,7 +189,6 @@ func TestWhenEndpointSuccessCallbacks(t *testing.T) {
 	call := testCallback()
 	call.Headers[AssuredCallbackTarget] = testServer.URL
 	endpoints := &AssuredEndpoints{
-		logger:     DefaultOptions.logger,
 		httpClient: http.DefaultClient,
 		assuredCalls: &CallStore{
 			data: map[string][]*Call{"GET:test/assured": {assured}},
@@ -227,7 +221,6 @@ func TestWhenEndpointSuccessDelayed(t *testing.T) {
 	call.Headers[AssuredCallbackTarget] = testServer.URL
 	call.Headers[AssuredCallbackDelay] = "4"
 	endpoints := &AssuredEndpoints{
-		logger:     DefaultOptions.logger,
 		httpClient: http.DefaultClient,
 		assuredCalls: &CallStore{
 			data: map[string][]*Call{"GET:test/assured": {assured}},
@@ -313,7 +306,6 @@ func TestVerifyEndpointTrackingDisabled(t *testing.T) {
 
 func TestClearEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         kitlog.NewLogfmtLogger(io.Discard),
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      fullAssuredCalls,
 		callbackCalls:  NewCallStore(),
@@ -347,7 +339,6 @@ func TestClearEndpointSuccess(t *testing.T) {
 
 func TestClearEndpointSuccessCallback(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:       kitlog.NewLogfmtLogger(io.Discard),
 		assuredCalls: fullAssuredCalls,
 		madeCalls:    NewCallStore(),
 		callbackCalls: &CallStore{
@@ -370,7 +361,6 @@ func TestClearEndpointSuccessCallback(t *testing.T) {
 
 func TestClearAllEndpointSuccess(t *testing.T) {
 	endpoints := &AssuredEndpoints{
-		logger:         kitlog.NewLogfmtLogger(io.Discard),
 		assuredCalls:   fullAssuredCalls,
 		madeCalls:      fullAssuredCalls,
 		callbackCalls:  fullAssuredCalls,

@@ -4,24 +4,14 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-
-	kitlog "github.com/go-kit/kit/log"
 )
 
 func Test_applyOptions(t *testing.T) {
-	log := kitlog.NewNopLogger()
 	tests := []struct {
 		name   string
 		option Option
 		want   Options
 	}{
-		{
-			name:   "with logger",
-			option: WithLogger(log),
-			want: Options{
-				logger: log,
-			},
-		},
 		{
 			name:   "with http client",
 			option: WithHTTPClient(*http.DefaultClient),

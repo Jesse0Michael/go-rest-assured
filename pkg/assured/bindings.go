@@ -25,7 +25,6 @@ const (
 
 // Serve starts the Rest Assured client to begin listening on the application endpoints
 func (c *Client) Serve() error {
-	_ = c.logger.Log("message", "starting go rest assured", "port", c.Port)
 	if c.tlsCertFile != "" && c.tlsKeyFile != "" {
 		return http.ServeTLS(c.listener, handlers.RecoveryHandler()(c.router), c.tlsCertFile, c.tlsKeyFile)
 	} else {
@@ -54,7 +53,6 @@ func (c *Client) createApplicationRouter() *mux.Router {
 			e.WrappedEndpoint(e.GivenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -64,7 +62,6 @@ func (c *Client) createApplicationRouter() *mux.Router {
 			e.WrappedEndpoint(e.GivenCallbackEndpoint),
 			decodeAssuredCallback,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -74,7 +71,6 @@ func (c *Client) createApplicationRouter() *mux.Router {
 			e.WrappedEndpoint(e.WhenEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -84,7 +80,6 @@ func (c *Client) createApplicationRouter() *mux.Router {
 			e.WrappedEndpoint(e.VerifyEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -94,7 +89,6 @@ func (c *Client) createApplicationRouter() *mux.Router {
 			e.WrappedEndpoint(e.ClearEndpoint),
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(assuredMethods...)
 
@@ -104,7 +98,6 @@ func (c *Client) createApplicationRouter() *mux.Router {
 			e.ClearAllEndpoint,
 			decodeAssuredCall,
 			encodeAssuredCall,
-			kithttp.ServerErrorLogger(c.logger),
 			kithttp.ServerAfter(kithttp.SetResponseHeader("Access-Control-Allow-Origin", "*"))),
 	).Methods(http.MethodDelete)
 
