@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	kithttp "github.com/go-kit/kit/transport/http"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -22,15 +21,6 @@ const (
 	AssuredCallbackTarget = "Assured-Callback-Target"
 	AssuredCallbackDelay  = "Assured-Callback-Delay"
 )
-
-// Serve starts the Rest Assured client to begin listening on the application endpoints
-func (c *Client) Serve() error {
-	if c.tlsCertFile != "" && c.tlsKeyFile != "" {
-		return http.ServeTLS(c.listener, handlers.RecoveryHandler()(c.router), c.tlsCertFile, c.tlsKeyFile)
-	} else {
-		return http.Serve(c.listener, handlers.RecoveryHandler()(c.router))
-	}
-}
 
 // createApplicationRouter sets up the router that will handle all of the application routes
 func (c *Client) createApplicationRouter() *mux.Router {

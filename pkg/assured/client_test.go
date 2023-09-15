@@ -149,6 +149,12 @@ func TestClientTLS(t *testing.T) {
 	}, calls)
 }
 
+func TestClientInvalidPort(t *testing.T) {
+	client := NewClient(WithPort(-1))
+
+	require.Error(t, client.Serve())
+}
+
 func TestClientCallbacks(t *testing.T) {
 	httpClient := http.Client{}
 	called := false
@@ -235,8 +241,7 @@ func TestClientClose(t *testing.T) {
 }
 
 func TestClientGivenNoMethod(t *testing.T) {
-	client := NewClient()
-	go func() { _ = client.Serve() }()
+	client := NewClientServe()
 	defer client.Close()
 	time.Sleep(time.Second)
 

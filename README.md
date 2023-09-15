@@ -26,8 +26,8 @@ To understand how rest assured is working behind the scenes, or to use rest assu
 ```go
 import ("github.com/jesse0michael/go-rest-assured/v4/pkg/assured")
 
-// Create and run a new Assured Client
-client := assured.NewClient()
+// Create and Serve a new Assured Client
+client := assured.NewClientServe()
 defer client.Close()
 ```
 
