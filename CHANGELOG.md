@@ -1,3 +1,13 @@
+## [4.0.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.1...v4.0.2) (2023-09-15)
+
+### Chores
+
+- change default branch to main ([3eca768](https://github.com/Jesse0Michael/go-rest-assured/commit/3eca7685cab2b410ecedac6e40c9b63a82e1c30b))
+
+### Continuous Integration
+
+- release from main ([8e01820](https://github.com/Jesse0Michael/go-rest-assured/commit/8e018207b427df9a7eb6b2fc754e611fdd38929a))
+
 ## [4.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.0...v4.0.1) (2023-09-15)
 
 ### Build System
