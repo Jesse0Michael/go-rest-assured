@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/pborman/uuid"
 )
 
 // Client
@@ -85,7 +85,7 @@ func (c *Client) Given(calls ...Call) error {
 
 		// Create callbacks
 		callbacks := make([]*http.Request, len(call.Callbacks))
-		callbackKey := uuid.New()
+		callbackKey := uuid.NewString()
 		for i, callback := range call.Callbacks {
 			if callback.Target == "" {
 				return fmt.Errorf("cannot stub callback without target")
@@ -130,7 +130,6 @@ func (c *Client) Verify(method, path string) ([]Call, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(req)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failure to verify calls")
