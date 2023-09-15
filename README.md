@@ -1,6 +1,6 @@
 # GO REST ASSURED
 
-[![Build](https://github.com/Jesse0Michael/go-rest-assured/workflows/Build/badge.svg)](https://github.com/Jesse0Michael/go-rest-assured/actions?query=branch%3Amaster) [![Coverage Status](https://coveralls.io/repos/github/Jesse0Michael/go-rest-assured/badge.svg?branch=master)](https://coveralls.io/github/Jesse0Michael/go-rest-assured?branch=master)
+[![Build](https://github.com/Jesse0Michael/go-rest-assured/workflows/Build/badge.svg)](https://github.com/Jesse0Michael/go-rest-assured/actions?query=branch%3Amain) [![Coverage Status](https://coveralls.io/repos/github/Jesse0Michael/go-rest-assured/badge.svg?branch=main)](https://coveralls.io/github/Jesse0Michael/go-rest-assured?branch=main)
 
 Go Rest Assured is a small service written in GO intended to be used to mock out REST API applications for testing. The concept is based on the [Rest Assured](http://rest-assured.io/) service written in Java and [other languages](https://github.com/artemave/REST-assured)
 
