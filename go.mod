@@ -1,4 +1,4 @@
-module github.com/jesse0michael/go-rest-assured/v3
+module github.com/jesse0michael/go-rest-assured/v4
 
 go 1.19
 
