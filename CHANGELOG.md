@@ -1,3 +1,33 @@
+# [3.2.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.1.2...v3.2.0) (2023-09-15)
+
+### Bug Fixes
+
+- use google/uuid package ([f440642](https://github.com/Jesse0Michael/go-rest-assured/commit/f44064258ee2405495f717e34f08892a6d231dc7))
+
+### Build System
+
+- add docker labels ([5abe583](https://github.com/Jesse0Michael/go-rest-assured/commit/5abe58315dd85d4b90d4a7940ce1ba472f399219))
+
+### Chores
+
+- update license ([ebce1b2](https://github.com/Jesse0Michael/go-rest-assured/commit/ebce1b2bac5fe337a8604a563096912527490ebf))
+- upgrade to go 1.21 ([7adaa3f](https://github.com/Jesse0Michael/go-rest-assured/commit/7adaa3fbe3ad4ad6db034be15d423fb7776e0b46))
+
+### Continuous Integration
+
+- update go version ([2ea667c](https://github.com/Jesse0Michael/go-rest-assured/commit/2ea667c69a388c85f5bee6164c76d3b39c9d3ac7))
+
+### Features
+
+- add NewClientServe function ([453d258](https://github.com/Jesse0Michael/go-rest-assured/commit/453d25892330d7520f57dd12e3c550cc4ff2285a))
+- BREAKING CHANGE upgrade rest assured to v4 ([04f971b](https://github.com/Jesse0Michael/go-rest-assured/commit/04f971bd0d5e96c971bd84a4e7f3e66ecf5e7b62))
+- export Serve method to start http listener ([e3af4cc](https://github.com/Jesse0Michael/go-rest-assured/commit/e3af4ccd4e2a911afe6951365f2196ee41c02266))
+- move to log/slog for logging ([ac6be67](https://github.com/Jesse0Michael/go-rest-assured/commit/ac6be679ee426bb2fd1235ecb1f401ab2a6b8bd4))
+
+### Tests
+
+- Serve rest assured client in tests ([5503a7d](https://github.com/Jesse0Michael/go-rest-assured/commit/5503a7dc008f9385767c47556473c90dfe922921))
+
 ## [3.1.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v3.1.1...v3.1.2) (2022-10-10)
 
 ### Continuous Integration
