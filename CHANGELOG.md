@@ -1,3 +1,9 @@
+## [4.0.3](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.2...v4.0.3) (2023-11-29)
+
+### Bug Fixes
+
+- skip empty options ([5afb731](https://github.com/Jesse0Michael/go-rest-assured/commit/5afb7319137610ce04d441ea0a0b26cf5d300d2a))
+
 ## [4.0.2](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.1...v4.0.2) (2023-09-15)
 
 ### Chores
