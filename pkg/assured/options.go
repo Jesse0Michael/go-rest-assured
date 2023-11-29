@@ -44,14 +44,18 @@ func WithHTTPClient(c http.Client) Option {
 // WithHost sets the host option.
 func WithHost(h string) Option {
 	return func(o *Options) {
-		o.host = h
+		if h != "" {
+			o.host = h
+		}
 	}
 }
 
 // WithPort sets the port option.
 func WithPort(p int) Option {
 	return func(o *Options) {
-		o.Port = p
+		if p != 0 {
+			o.Port = p
+		}
 	}
 }
 
