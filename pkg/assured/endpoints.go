@@ -19,6 +19,7 @@ type AssuredEndpoints struct {
 	madeCalls      *CallStore
 	callbackCalls  *CallStore
 	trackMadeCalls bool
+	logger         *slog.Logger
 }
 
 // NewAssuredEndpoints creates a new instance of assured endpoints
@@ -29,6 +30,7 @@ func NewAssuredEndpoints(options Options) *AssuredEndpoints {
 		callbackCalls:  NewCallStore(),
 		httpClient:     options.httpClient,
 		trackMadeCalls: options.trackMadeCalls,
+		logger:         options.logger,
 	}
 }
 
@@ -47,7 +49,7 @@ func (a *AssuredEndpoints) WrappedEndpoint(handler func(context.Context, *Call) 
 // GivenEndpoint is used to stub out a call for a given path
 func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	a.assuredCalls.Add(call)
-	slog.With("path", call.ID()).Info("assured call set")
+	a.logger.With("path", call.ID()).Info("assured call set")
 
 	return call, nil
 }
@@ -55,7 +57,7 @@ func (a *AssuredEndpoints) GivenEndpoint(ctx context.Context, call *Call) (inter
 // GivenCallbackEndpoint is used to stub out callbacks for a callback key
 func (a *AssuredEndpoints) GivenCallbackEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	a.callbackCalls.AddAt(call.Headers[AssuredCallbackKey], call)
-	slog.With("key", call.Headers[AssuredCallbackKey], "target", call.Headers[AssuredCallbackTarget]).Info("assured callback set")
+	a.logger.With("key", call.Headers[AssuredCallbackKey], "target", call.Headers[AssuredCallbackTarget]).Info("assured callback set")
 
 	return call, nil
 }
@@ -64,7 +66,7 @@ func (a *AssuredEndpoints) GivenCallbackEndpoint(ctx context.Context, call *Call
 func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	calls := a.assuredCalls.Get(call.ID())
 	if len(calls) == 0 {
-		slog.With("path", call.ID()).Info("assured call not found")
+		a.logger.With("path", call.ID()).Info("assured call not found")
 		return nil, errors.New("No assured calls")
 	}
 
@@ -84,7 +86,7 @@ func (a *AssuredEndpoints) WhenEndpoint(ctx context.Context, call *Call) (interf
 		time.Sleep(time.Duration(delay) * time.Second)
 	}
 
-	slog.With("path", call.ID()).Info("assured call responded")
+	a.logger.With("path", call.ID()).Info("assured call responded")
 	return assured, nil
 }
 
@@ -100,10 +102,10 @@ func (a *AssuredEndpoints) VerifyEndpoint(ctx context.Context, call *Call) (inte
 func (a *AssuredEndpoints) ClearEndpoint(ctx context.Context, call *Call) (interface{}, error) {
 	a.assuredCalls.Clear(call.ID())
 	a.madeCalls.Clear(call.ID())
-	slog.With("path", call.ID()).Info("cleared calls for path")
+	a.logger.With("path", call.ID()).Info("cleared calls for path")
 	if call.Headers[AssuredCallbackKey] != "" {
 		a.callbackCalls.Clear(call.Headers[AssuredCallbackKey])
-		slog.With("key", call.Headers[AssuredCallbackKey]).Info("cleared calls for key")
+		a.logger.With("key", call.Headers[AssuredCallbackKey]).Info("cleared calls for key")
 	}
 
 	return nil, nil
@@ -114,7 +116,7 @@ func (a *AssuredEndpoints) ClearAllEndpoint(ctx context.Context, i interface{}) 
 	a.assuredCalls.ClearAll()
 	a.madeCalls.ClearAll()
 	a.callbackCalls.ClearAll()
-	slog.Info("cleared all calls")
+	a.logger.Info("cleared all calls")
 
 	return nil, nil
 }
@@ -127,7 +129,7 @@ func (a *AssuredEndpoints) sendCallback(target string, call *Call) {
 	}
 	req, err := http.NewRequest(call.Method, target, bytes.NewBuffer(call.Response))
 	if err != nil {
-		slog.With("target", target, "error", err).Info("failed to build callback request")
+		a.logger.With("target", target, "error", err).Info("failed to build callback request")
 		return
 	}
 	for key, value := range call.Headers {
@@ -137,8 +139,8 @@ func (a *AssuredEndpoints) sendCallback(target string, call *Call) {
 	time.Sleep(time.Duration(delay) * time.Second)
 	resp, err := a.httpClient.Do(req)
 	if err != nil {
-		slog.With("target", target, "error", err).Info("failed to reach callback target")
+		a.logger.With("target", target, "error", err).Info("failed to reach callback target")
 		return
 	}
-	slog.With("target", target, "status_code", resp.StatusCode).Info("sent callback to target")
+	a.logger.With("target", target, "status_code", resp.StatusCode).Info("sent callback to target")
 }

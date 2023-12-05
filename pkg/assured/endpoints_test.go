@@ -2,6 +2,7 @@ package assured
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,6 +17,7 @@ func TestNewAssuredEndpoints(t *testing.T) {
 		assuredCalls:   NewCallStore(),
 		madeCalls:      NewCallStore(),
 		trackMadeCalls: true,
+		logger:         slog.Default(),
 	}
 	actual := NewAssuredEndpoints(DefaultOptions)
 
@@ -121,6 +123,7 @@ func TestWhenEndpointSuccess(t *testing.T) {
 		madeCalls:      NewCallStore(),
 		callbackCalls:  NewCallStore(),
 		trackMadeCalls: true,
+		logger:         slog.Default(),
 	}
 	expected := map[string][]*Call{
 		"GET:test/assured":    {testCall2(), testCall1()},
@@ -153,6 +156,7 @@ func TestWhenEndpointSuccessTrackingDisabled(t *testing.T) {
 		madeCalls:      NewCallStore(),
 		callbackCalls:  NewCallStore(),
 		trackMadeCalls: false,
+		logger:         slog.Default(),
 	}
 	expected := map[string][]*Call{
 		"GET:test/assured":    {testCall2(), testCall1()},
@@ -198,6 +202,7 @@ func TestWhenEndpointSuccessCallbacks(t *testing.T) {
 			data: map[string][]*Call{"call-key": {call}},
 		},
 		trackMadeCalls: true,
+		logger:         slog.Default(),
 	}
 
 	c, err := endpoints.WhenEndpoint(context.TODO(), assured)
@@ -230,6 +235,7 @@ func TestWhenEndpointSuccessDelayed(t *testing.T) {
 			data: map[string][]*Call{"call-key": {call}},
 		},
 		trackMadeCalls: true,
+		logger:         slog.Default(),
 	}
 	start := time.Now()
 	c, err := endpoints.WhenEndpoint(context.TODO(), assured)
@@ -310,6 +316,7 @@ func TestClearEndpointSuccess(t *testing.T) {
 		madeCalls:      fullAssuredCalls,
 		callbackCalls:  NewCallStore(),
 		trackMadeCalls: true,
+		logger:         slog.Default(),
 	}
 	expected := map[string][]*Call{
 		"POST:teapot/assured": {testCall3()},
@@ -348,6 +355,7 @@ func TestClearEndpointSuccessCallback(t *testing.T) {
 			},
 		},
 		trackMadeCalls: true,
+		logger:         slog.Default(),
 	}
 
 	c, err := endpoints.ClearEndpoint(context.TODO(), testCallback())
@@ -365,6 +373,7 @@ func TestClearAllEndpointSuccess(t *testing.T) {
 		madeCalls:      fullAssuredCalls,
 		callbackCalls:  fullAssuredCalls,
 		trackMadeCalls: true,
+		logger:         slog.Default(),
 	}
 
 	c, err := endpoints.ClearAllEndpoint(context.TODO(), nil)

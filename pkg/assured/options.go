@@ -1,6 +1,7 @@
 package assured
 
 import (
+	"log/slog"
 	"net/http"
 )
 
@@ -8,6 +9,7 @@ var DefaultOptions = Options{
 	httpClient:     http.DefaultClient,
 	host:           "localhost",
 	trackMadeCalls: true,
+	logger:         slog.Default(),
 }
 
 // Option is a function on that configures rest assured settings
@@ -32,6 +34,9 @@ type Options struct {
 
 	// trackMadeCalls toggles storing the requests made against the rest assured server. Defaults to true.
 	trackMadeCalls bool
+
+	// logger to use for logging. Defaults the default logger.
+	logger *slog.Logger
 }
 
 // WithHTTPClient sets the http client option.
@@ -71,6 +76,15 @@ func WithTLS(cert, key string) Option {
 func WithCallTracking(t bool) Option {
 	return func(o *Options) {
 		o.trackMadeCalls = t
+	}
+}
+
+// WithCallTracking sets the trackMadeCalls option.
+func WithLogger(l *slog.Logger) Option {
+	return func(o *Options) {
+		if l != nil {
+			o.logger = l
+		}
 	}
 }
 
