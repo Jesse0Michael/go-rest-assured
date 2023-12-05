@@ -1,7 +1,9 @@
 package assured
 
 import (
+	"log/slog"
 	"net/http"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -38,6 +40,13 @@ func Test_applyOptions(t *testing.T) {
 			option: WithCallTracking(true),
 			want: Options{
 				trackMadeCalls: true,
+			},
+		},
+		{
+			name:   "with logger",
+			option: WithLogger(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{}))),
+			want: Options{
+				logger: slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{})),
 			},
 		},
 	}
