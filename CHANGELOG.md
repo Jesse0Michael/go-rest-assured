@@ -1,3 +1,9 @@
+# [4.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.3...v4.1.0) (2023-12-05)
+
+### Features
+
+- support passing a slog.logger ([902baf0](https://github.com/Jesse0Michael/go-rest-assured/commit/902baf096722ac65a444b6493cd49e9e2630e382))
+
 ## [4.0.3](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.2...v4.0.3) (2023-11-29)
 
 ### Bug Fixes
