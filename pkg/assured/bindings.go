@@ -35,6 +35,8 @@ func (c *Client) createApplicationRouter() *mux.Router {
 		http.MethodDelete,
 		http.MethodConnect,
 		http.MethodOptions,
+		"SEARCH",
+		"QUERY",
 	}
 
 	router.Handle(
