@@ -1,3 +1,9 @@
+# [4.2.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.1.0...v4.2.0) (2024-02-23)
+
+### Features
+
+- add custom http verb support ([cf62869](https://github.com/Jesse0Michael/go-rest-assured/commit/cf62869d6ef1ba9af66039a541c296fd19f55ade))
+
 # [4.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.0.3...v4.1.0) (2023-12-05)
 
 ### Features
