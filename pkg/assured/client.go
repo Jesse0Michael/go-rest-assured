@@ -10,23 +10,37 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+)
+
+const (
+	AssuredStatus         = "Assured-Status"
+	AssuredMethod         = "Assured-Method"
+	AssuredDelay          = "Assured-Delay"
+	AssuredCallbackKey    = "Assured-Callback-Key"
+	AssuredCallbackTarget = "Assured-Callback-Target"
+	AssuredCallbackDelay  = "Assured-Callback-Delay"
 )
 
 // Client
 type Client struct {
 	Options
-	listener net.Listener
-	router   *mux.Router
+	listener      net.Listener
+	router        *http.ServeMux
+	assuredCalls  *CallStore
+	madeCalls     *CallStore
+	callbackCalls *CallStore
 }
 
 // NewClient creates a new go-rest-assured client
 func NewClient(opts ...Option) *Client {
 	c := Client{
-		Options: DefaultOptions,
+		Options:       DefaultOptions,
+		assuredCalls:  NewCallStore(),
+		madeCalls:     NewCallStore(),
+		callbackCalls: NewCallStore(),
 	}
 	c.Options.applyOptions(opts...)
+	c.router = routes(c.logger, c.assuredCalls, c.madeCalls, c.callbackCalls, c.httpClient, c.trackMadeCalls)
 
 	var err error
 	c.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", c.Options.Port))
@@ -36,7 +50,6 @@ func NewClient(opts ...Option) *Client {
 		c.Options.Port = c.listener.Addr().(*net.TCPAddr).Port
 	}
 
-	c.router = c.createApplicationRouter()
 	return &c
 }
 
@@ -57,9 +70,9 @@ func (c *Client) Serve() error {
 	}
 
 	if c.tlsCertFile != "" && c.tlsKeyFile != "" {
-		return http.ServeTLS(c.listener, handlers.RecoveryHandler()(c.router), c.tlsCertFile, c.tlsKeyFile)
+		return http.ServeTLS(c.listener, c.router, c.tlsCertFile, c.tlsKeyFile)
 	} else {
-		return http.Serve(c.listener, handlers.RecoveryHandler()(c.router))
+		return http.Serve(c.listener, c.router)
 	}
 }
 
