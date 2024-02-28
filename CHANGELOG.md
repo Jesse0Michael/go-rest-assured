@@ -1,3 +1,9 @@
+# [4.3.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.2.0...v4.3.0) (2024-02-28)
+
+### Features
+
+- remove go-kit/kit and gorilla/mux in favor of net/http's ServeMux ([30da74d](https://github.com/Jesse0Michael/go-rest-assured/commit/30da74da27cea59b735a47a6083502cd734ad10c))
+
 # [4.2.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.1.0...v4.2.0) (2024-02-23)
 
 ### Features
