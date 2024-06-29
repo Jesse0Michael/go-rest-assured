@@ -13,6 +13,10 @@ type APIError struct {
 	Error error `json:"error"`
 }
 
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
 // handleGiven is used to stub out a call for a given path
 func handleGiven(logger *slog.Logger, assuredCalls *CallStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

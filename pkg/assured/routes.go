@@ -20,6 +20,7 @@ func routes(
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/health", handleHealth)
 	mux.HandleFunc("/given/{path...}", handleGiven(logger, assuredCalls))
 	mux.HandleFunc("/callback", handleGivenCallback(logger, callbackCalls))
 	mux.HandleFunc("/when/{path...}", handleWhen(logger, httpClient, assuredCalls, madeCalls, callbackCalls, trackMadeCalls))
