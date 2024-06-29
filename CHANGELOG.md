@@ -1,3 +1,9 @@
+# [4.4.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.3.0...v4.4.0) (2024-06-29)
+
+### Features
+
+- add healthcheck ([15d5429](https://github.com/Jesse0Michael/go-rest-assured/commit/15d542972eb216f0cf1d4977ba0c5862558ab41a))
+
 # [4.3.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.2.0...v4.3.0) (2024-02-28)
 
 ### Features
