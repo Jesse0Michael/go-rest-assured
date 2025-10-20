@@ -51,7 +51,7 @@ func handleWhen(logger *slog.Logger, httpClient *http.Client, assuredCalls, made
 		calls := assuredCalls.Get(call.ID())
 		if len(calls) == 0 {
 			logger.With("path", call.ID()).Info("assured call not found")
-			_ = encode[APIError](w, http.StatusNotFound, APIError{errors.New("No assured calls")})
+			_ = encode[APIError](w, http.StatusNotFound, APIError{errors.New("no assured calls")})
 			return
 		}
 
@@ -82,7 +82,7 @@ func handleVerify(logger *slog.Logger, madeCalls *CallStore, trackMadeCalls bool
 		call := decodeAssuredCall(r)
 
 		if !trackMadeCalls {
-			_ = encode[APIError](w, http.StatusNotFound, APIError{errors.New("Tracking made calls is disabled")})
+			_ = encode[APIError](w, http.StatusNotFound, APIError{errors.New("tracking made calls is disabled")})
 			return
 		}
 

@@ -82,7 +82,7 @@ func decodeAssuredCall(req *http.Request) Call {
 
 	// Set response body
 	if req.Body != nil {
-		defer req.Body.Close()
+		defer func() { _ = req.Body.Close() }()
 		if bytes, err := io.ReadAll(req.Body); err == nil {
 			call.Response = bytes
 		}
@@ -115,7 +115,7 @@ func decodeAssuredCallback(req *http.Request) (Call, error) {
 
 	// Set response body
 	if req.Body != nil {
-		defer req.Body.Close()
+		defer func() { _ = req.Body.Close() }()
 		if bytes, err := io.ReadAll(req.Body); err == nil {
 			call.Response = bytes
 		}

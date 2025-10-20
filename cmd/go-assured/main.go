@@ -35,15 +35,15 @@ func main() {
 
 	flag.Parse()
 
-	client := assured.NewClient(
+	a := assured.NewAssured(
 		assured.WithPort(*port),
 		assured.WithCallTracking(*trackMade),
 		assured.WithHost(*host),
 		assured.WithTLS(*tlsCert, *tlsKey))
 
 	go func() {
-		slog.With("port", client.Port).Info("starting go rest assured client")
-		if err := client.Serve(); err != nil {
+		slog.With("port", a.Server.Port).Info("starting go rest assured server")
+		if err := a.Serve(); err != nil {
 			slog.With("error", err).Info("rest assured server stopped serving")
 		}
 	}()
@@ -61,13 +61,15 @@ func main() {
 			slog.With("error", err).Info("failed to unmarshal preload file")
 			cancel(err)
 		}
-		if err = client.Given(preload.Calls...); err != nil {
+		if err = a.Given(ctx, preload.Calls...); err != nil {
 			slog.With("error", err).Info("failed to set given preload file calls")
 			cancel(err)
 		}
 	}
 
 	<-ctx.Done()
-	client.Close()
+	if err := a.Close(); err != nil {
+		slog.With("error", err).Info("failed to close assured")
+	}
 	slog.Info("exiting go rest assured")
 }

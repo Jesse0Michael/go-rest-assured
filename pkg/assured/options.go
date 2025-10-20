@@ -1,6 +1,7 @@
 package assured
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 )
@@ -92,4 +93,13 @@ func (o *Options) applyOptions(opts ...Option) {
 	for _, opt := range opts {
 		opt(o)
 	}
+}
+
+// url returns the url to used by the client internally
+func (o *Options) url() string {
+	schema := "http"
+	if o.tlsCertFile != "" && o.tlsKeyFile != "" {
+		schema = "https"
+	}
+	return fmt.Sprintf("%s://%s:%d", schema, o.host, o.Port)
 }
