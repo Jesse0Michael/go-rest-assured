@@ -57,44 +57,44 @@ func TestAssured(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte{}, body)
 
-	calls, err := assured.Verify(t.Context(), "GET", "test/assured")
+	calls, err := assured.Verify(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     "GET",
+			Method:     http.MethodGet,
 			Path:       "test/assured",
 			StatusCode: 200,
 			Response:   []byte(`{"calling":"you"}`),
 			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}},
 		{
-			Method:     "GET",
+			Method:     http.MethodGet,
 			Path:       "test/assured",
 			StatusCode: 200,
 			Response:   []byte(`{"calling":"again"}`),
 			Headers:    map[string]string{"Content-Length": "19", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
-	calls, err = assured.Verify(t.Context(), "POST", "teapot/assured")
+	calls, err = assured.Verify(t.Context(), http.MethodPost, "teapot/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     "POST",
+			Method:     http.MethodPost,
 			Path:       "teapot/assured",
 			StatusCode: 200,
 			Response:   []byte(`{"calling":"here"}`),
 			Headers:    map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
-	err = assured.Clear(t.Context(), "GET", "test/assured")
+	err = assured.Clear(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
 
-	calls, err = assured.Verify(t.Context(), "GET", "test/assured")
+	calls, err = assured.Verify(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
 	require.Nil(t, calls)
 
-	calls, err = assured.Verify(t.Context(), "POST", "teapot/assured")
+	calls, err = assured.Verify(t.Context(), http.MethodPost, "teapot/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     "POST",
+			Method:     http.MethodPost,
 			Path:       "teapot/assured",
 			StatusCode: 200,
 			Response:   []byte(`{"calling":"here"}`),
@@ -105,11 +105,11 @@ func TestAssured(t *testing.T) {
 	err = assured.ClearAll(t.Context())
 	require.NoError(t, err)
 
-	calls, err = assured.Verify(t.Context(), "GET", "test/assured")
+	calls, err = assured.Verify(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
 	require.Nil(t, calls)
 
-	calls, err = assured.Verify(t.Context(), "POST", "teapot/assured")
+	calls, err = assured.Verify(t.Context(), http.MethodPost, "teapot/assured")
 	require.NoError(t, err)
 	require.Nil(t, calls)
 }
@@ -138,11 +138,11 @@ func TestAssuredTLS(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte(`{"assured": true}`), body)
 
-	calls, err := assured.Verify(t.Context(), "GET", "test/assured")
+	calls, err := assured.Verify(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     "GET",
+			Method:     http.MethodGet,
 			Path:       "test/assured",
 			StatusCode: 200,
 			Response:   []byte(`{"calling":"you"}`),
@@ -175,17 +175,17 @@ func TestAssuredCallbacks(t *testing.T) {
 
 	err := assured.Given(t.Context(), Call{
 		Path:   "test/assured",
-		Method: "POST",
+		Method: http.MethodPost,
 		Delay:  2,
 		Callbacks: []Callback{
 			{
-				Method:   "POST",
+				Method:   http.MethodPost,
 				Target:   testServer.URL,
 				Response: []byte(`{"done":"here"}`),
 				Headers:  map[string]string{"x-info": "important"},
 			},
 			{
-				Method:   "POST",
+				Method:   http.MethodPost,
 				Target:   delayTestServer.URL,
 				Delay:    4,
 				Response: []byte(`{"wait":"there's more"}`),
@@ -258,9 +258,9 @@ func TestAssuredGivenNoMethod(t *testing.T) {
 
 func TestAssuredGivenCallbackMissingTarget(t *testing.T) {
 	call := Call{
-		Method: "POST",
+		Method: http.MethodPost,
 		Callbacks: []Callback{
-			{Method: "POST"},
+			{Method: http.MethodPost},
 		},
 	}
 	assured := NewAssured()
@@ -275,7 +275,7 @@ func TestAssuredGivenCallbackMissingTarget(t *testing.T) {
 
 func TestAssuredGivenCallbackBadMethod(t *testing.T) {
 	call := Call{
-		Method: "POST",
+		Method: http.MethodPost,
 		Callbacks: []Callback{
 			{Method: "\"", Target: "http://localhost/"},
 		},
@@ -383,7 +383,7 @@ func TestAssuredPathSanitization(t *testing.T) {
 	defer func() { _ = assured.Close() }()
 	time.Sleep(time.Second)
 
-	require.NoError(t, assured.Given(t.Context(), Call{Method: "GET", Path: "///yoyo/path///", StatusCode: http.StatusAccepted}))
+	require.NoError(t, assured.Given(t.Context(), Call{Method: http.MethodGet, Path: "///yoyo/path///", StatusCode: http.StatusAccepted}))
 
 	req, err := http.NewRequest(http.MethodGet, assured.URL()+"/yoyo/path", nil)
 	require.NoError(t, err)

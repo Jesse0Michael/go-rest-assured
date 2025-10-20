@@ -2,6 +2,7 @@ package assured
 
 import (
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,7 +11,7 @@ import (
 func TestCallID(t *testing.T) {
 	call := Call{
 		Path:   "/given/test/assured",
-		Method: "GET",
+		Method: http.MethodGet,
 	}
 
 	require.Equal(t, "GET:/given/test/assured", call.ID())

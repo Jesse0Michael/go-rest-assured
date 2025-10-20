@@ -27,7 +27,7 @@ import (
 func testCall1() *Call {
 	return &Call{
 		Path:       "test/assured",
-		Method:     "GET",
+		Method:     http.MethodGet,
 		StatusCode: http.StatusOK,
 		Response:   []byte(`{"assured": true}`),
 		Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
@@ -38,7 +38,7 @@ func testCall1() *Call {
 func testCall2() *Call {
 	return &Call{
 		Path:       "test/assured",
-		Method:     "GET",
+		Method:     http.MethodGet,
 		StatusCode: http.StatusConflict,
 		Response:   []byte("error"),
 		Headers:    map[string]string{"Content-Length": "5", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
@@ -48,7 +48,7 @@ func testCall2() *Call {
 func testCall3() *Call {
 	return &Call{
 		Path:       "teapot/assured",
-		Method:     "POST",
+		Method:     http.MethodPost,
 		StatusCode: http.StatusTeapot,
 		Headers:    map[string]string{"Content-Length": "0", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 	}
@@ -57,7 +57,7 @@ func testCall3() *Call {
 // func testCallback() *Call {
 // 	return &Call{
 // 		Response: []byte(`{"done": true}`),
-// 		Method:   "POST",
+// 		Method:   http.MethodPost,
 // 		Headers:  map[string]string{"Assured-Callback-Key": "call-key", "Assured-Callback-Target": "http://faketarget.com/"},
 // 	}
 // }
