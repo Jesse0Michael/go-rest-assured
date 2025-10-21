@@ -27,7 +27,7 @@ func NewServer(opts ...Option) *Server {
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
 	if err != nil {
-		s.logger.With("error", err, "port", s.Port).Error("unable to create http listener")
+		s.logger.Error("unable to create http listener", "port", s.Port, "error", err)
 	} else {
 		s.Port = s.listener.Addr().(*net.TCPAddr).Port
 	}

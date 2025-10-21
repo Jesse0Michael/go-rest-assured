@@ -2,6 +2,7 @@ package assured
 
 import (
 	"bytes"
+	"context"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -52,7 +53,7 @@ func handleGiven(logger *slog.Logger, assuredCalls *CallStore) http.HandlerFunc 
 		}
 
 		assuredCalls.Add(&call)
-		logger.With("path", call.ID()).Info("assured call set")
+		logger.InfoContext(r.Context(), "assured call set", "path", call.ID())
 
 		_ = encode(w, http.StatusOK, call)
 	}
@@ -64,7 +65,7 @@ func handleWhen(logger *slog.Logger, httpClient *http.Client, assuredCalls, made
 		call := decodeAssuredCall(r)
 		calls := assuredCalls.Get(call.ID())
 		if len(calls) == 0 {
-			logger.With("path", call.ID()).Info("assured call not found")
+			logger.InfoContext(r.Context(), "assured call not found", "path", call.ID())
 			_ = encode(w, http.StatusNotFound, APIError{"no assured calls"})
 			return
 		}
@@ -77,13 +78,13 @@ func handleWhen(logger *slog.Logger, httpClient *http.Client, assuredCalls, made
 
 		// Trigger callbacks, if applicable
 		for _, callback := range assured.Callbacks {
-			go sendCallback(logger, httpClient, callback)
+			go sendCallback(r.Context(), logger, httpClient, callback)
 		}
 
 		// Delay response
 		time.Sleep(time.Duration(assured.Delay) * time.Second)
 
-		logger.With("path", call.ID()).Info("assured call responded")
+		logger.InfoContext(r.Context(), "assured call responded", "path", call.ID())
 		_ = encodeAssuredCall(w, assured)
 	}
 }
@@ -130,7 +131,7 @@ func handleClear(logger *slog.Logger, assuredCalls, madeCalls *CallStore) http.H
 
 		assuredCalls.Clear(req.ID())
 		madeCalls.Clear(req.ID())
-		logger.With("path", req.ID()).Info("cleared calls for path")
+		logger.InfoContext(r.Context(), "cleared calls for path", "path", req.ID())
 	}
 }
 
@@ -139,15 +140,15 @@ func handleClearAll(logger *slog.Logger, assuredCalls, madeCalls *CallStore) htt
 	return func(w http.ResponseWriter, r *http.Request) {
 		assuredCalls.ClearAll()
 		madeCalls.ClearAll()
-		logger.Info("cleared all calls")
+		logger.InfoContext(r.Context(), "cleared all calls")
 	}
 }
 
 // sendCallback sends a given callback to its target
-func sendCallback(logger *slog.Logger, httpClient *http.Client, callback Callback) {
+func sendCallback(ctx context.Context, logger *slog.Logger, httpClient *http.Client, callback Callback) {
 	req, err := http.NewRequest(callback.Method, callback.Target, bytes.NewBuffer(callback.Response))
 	if err != nil {
-		logger.With("target", callback.Target, "error", err).Info("failed to build callback request")
+		logger.InfoContext(ctx, "failed to build callback request", "target", callback.Target, "error", err)
 		return
 	}
 	for key, value := range callback.Headers {
@@ -157,8 +158,8 @@ func sendCallback(logger *slog.Logger, httpClient *http.Client, callback Callbac
 	time.Sleep(time.Duration(callback.Delay) * time.Second)
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		logger.With("target", callback.Target, "error", err).Info("failed to reach callback target")
+		logger.InfoContext(ctx, "failed to reach callback target", "target", callback.Target, "error", err)
 		return
 	}
-	logger.With("target", callback.Target, "status_code", resp.StatusCode).Info("sent callback to target")
+	logger.InfoContext(ctx, "sent callback to target", "target", callback.Target, "status_code", resp.StatusCode)
 }

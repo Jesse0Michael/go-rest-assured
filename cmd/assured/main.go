@@ -42,9 +42,9 @@ func main() {
 		assured.WithTLS(*tlsCert, *tlsKey))
 
 	go func() {
-		slog.With("port", a.Server.Port).Info("starting assured server")
+		slog.InfoContext(ctx, "starting assured server", "port", a.Server.Port)
 		if err := a.Serve(); err != nil {
-			slog.With("error", err).Info("assured server stopped serving")
+			slog.InfoContext(ctx, "assured server stopped serving", "error", err)
 		}
 	}()
 
@@ -52,24 +52,24 @@ func main() {
 	if *preload != "" {
 		b, err := os.ReadFile(*preload)
 		if err != nil {
-			slog.With("error", err).Info("failed to read preload file")
+			slog.InfoContext(ctx, "failed to read preload file", "error", err)
 			cancel(err)
 		}
 		var preload Preload
 		// TODO response won't unmarshal string to []byte
 		if err := json.Unmarshal(b, &preload); err != nil {
-			slog.With("error", err).Info("failed to unmarshal preload file")
+			slog.InfoContext(ctx, "failed to unmarshal preload file", "error", err)
 			cancel(err)
 		}
 		if err = a.Given(ctx, preload.Calls...); err != nil {
-			slog.With("error", err).Info("failed to set given preload file calls")
+			slog.InfoContext(ctx, "failed to set given preload file calls", "error", err)
 			cancel(err)
 		}
 	}
 
 	<-ctx.Done()
 	if err := a.Close(); err != nil {
-		slog.With("error", err).Info("failed to close assured")
+		slog.Info("failed to close assured", "error", err)
 	}
 	slog.Info("exiting assured")
 }
