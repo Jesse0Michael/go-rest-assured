@@ -12,9 +12,9 @@ import (
 type Call struct {
 	Path       string            `json:"path"`
 	Method     string            `json:"method"`
-	StatusCode int               `json:"status_code"`
-	Delay      int               `json:"delay"`
-	Headers    map[string]string `json:"headers"`
+	StatusCode int               `json:"status_code,omitzero"`
+	Delay      int               `json:"delay,omitzero"`
+	Headers    map[string]string `json:"headers,omitempty"`
 	Query      map[string]string `json:"query,omitempty"`
 	Response   CallResponse      `json:"response,omitempty"`
 	Callbacks  []Callback        `json:"callbacks,omitempty"`

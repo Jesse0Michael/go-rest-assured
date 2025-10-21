@@ -8,23 +8,21 @@ import (
 
 type Server struct {
 	Options
-	listener      net.Listener
-	router        *http.ServeMux
-	assuredCalls  *CallStore
-	madeCalls     *CallStore
-	callbackCalls *CallStore
+	listener     net.Listener
+	router       *http.ServeMux
+	assuredCalls *CallStore
+	madeCalls    *CallStore
 }
 
 // NewServer creates a new go-rest-assured server
 func NewServer(opts ...Option) *Server {
 	s := Server{
-		Options:       DefaultOptions,
-		assuredCalls:  NewCallStore(),
-		madeCalls:     NewCallStore(),
-		callbackCalls: NewCallStore(),
+		Options:      DefaultOptions,
+		assuredCalls: NewCallStore(),
+		madeCalls:    NewCallStore(),
 	}
 	s.applyOptions(opts...)
-	s.router = routes(s.logger, s.assuredCalls, s.madeCalls, s.callbackCalls, s.httpClient, s.trackMadeCalls)
+	s.router = routes(s.logger, s.assuredCalls, s.madeCalls, s.httpClient, s.trackMadeCalls)
 
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
@@ -52,7 +50,7 @@ func (s *Server) Serve() error {
 
 // URL returns the url to use to test you stubbed endpoints
 func (s *Server) URL() string {
-	return fmt.Sprintf("%s/when", s.url())
+	return s.url()
 }
 
 // Close is used to close the running service

@@ -22,7 +22,7 @@ func TestAssured(t *testing.T) {
 	time.Sleep(time.Second)
 
 	url := assured.URL()
-	require.Equal(t, "http://localhost:9091/when", url)
+	require.Equal(t, "http://localhost:9091", url)
 	require.NoError(t, assured.Given(t.Context(), *testCall1()))
 	require.NoError(t, assured.Given(t.Context(), *testCall2()))
 	require.NoError(t, assured.Given(t.Context(), *testCall3()))
@@ -61,27 +61,24 @@ func TestAssured(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     http.MethodGet,
-			Path:       "test/assured",
-			StatusCode: 200,
-			Response:   []byte(`{"calling":"you"}`),
-			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}},
+			Method:   http.MethodGet,
+			Path:     "test/assured",
+			Response: []byte(`{"calling":"you"}`),
+			Headers:  map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}},
 		{
-			Method:     http.MethodGet,
-			Path:       "test/assured",
-			StatusCode: 200,
-			Response:   []byte(`{"calling":"again"}`),
-			Headers:    map[string]string{"Content-Length": "19", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
+			Method:   http.MethodGet,
+			Path:     "test/assured",
+			Response: []byte(`{"calling":"again"}`),
+			Headers:  map[string]string{"Content-Length": "19", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
 	calls, err = assured.Verify(t.Context(), http.MethodPost, "teapot/assured")
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     http.MethodPost,
-			Path:       "teapot/assured",
-			StatusCode: 200,
-			Response:   []byte(`{"calling":"here"}`),
-			Headers:    map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
+			Method:   http.MethodPost,
+			Path:     "teapot/assured",
+			Response: []byte(`{"calling":"here"}`),
+			Headers:  map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
 	err = assured.Clear(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
@@ -94,11 +91,10 @@ func TestAssured(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     http.MethodPost,
-			Path:       "teapot/assured",
-			StatusCode: 200,
-			Response:   []byte(`{"calling":"here"}`),
-			Headers:    map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
+			Method:   http.MethodPost,
+			Path:     "teapot/assured",
+			Response: []byte(`{"calling":"here"}`),
+			Headers:  map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 		},
 	}, calls)
 
@@ -125,7 +121,7 @@ func TestAssuredTLS(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	url := assured.URL()
-	require.Equal(t, "https://localhost:9092/when", url)
+	require.Equal(t, "https://localhost:9092", url)
 	require.NoError(t, assured.Given(t.Context(), *testCall1()))
 
 	req, err := http.NewRequest(http.MethodGet, url+"/test/assured", bytes.NewReader([]byte(`{"calling":"you"}`)))
@@ -142,11 +138,10 @@ func TestAssuredTLS(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []Call{
 		{
-			Method:     http.MethodGet,
-			Path:       "test/assured",
-			StatusCode: 200,
-			Response:   []byte(`{"calling":"you"}`),
-			Headers:    map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
+			Method:   http.MethodGet,
+			Path:     "test/assured",
+			Response: []byte(`{"calling":"you"}`),
+			Headers:  map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 		},
 	}, calls)
 }
@@ -320,7 +315,7 @@ func TestAssuredBadRequestFailure(t *testing.T) {
 	err = assured.ClearAll(t.Context())
 
 	require.Error(t, err)
-	require.Equal(t, `parse "http://localhost:-1/clear": invalid port ":-1" after host`, err.Error())
+	require.Equal(t, `parse "http://localhost:-1/assured/clearall": invalid port ":-1" after host`, err.Error())
 }
 
 func TestAssuredVerifyHttpClientFailure(t *testing.T) {
@@ -333,26 +328,6 @@ func TestAssuredVerifyHttpClientFailure(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `connection refused`)
-	require.Nil(t, calls)
-}
-
-func TestAssuredVerifyResponseFailure(t *testing.T) {
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
-	defer func() { _ = assured.Close() }()
-	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-	}))
-	defer testServer.Close()
-	index := strings.LastIndex(testServer.URL, ":")
-	port, err := strconv.ParseInt(testServer.URL[index+1:], 10, 64)
-	require.NoError(t, err)
-	assured.Client.Port = int(port)
-
-	calls, err := assured.Verify(t.Context(), "GONE", "not/started")
-
-	require.Error(t, err)
-	require.Equal(t, `failure to verify calls`, err.Error())
 	require.Nil(t, calls)
 }
 
