@@ -1,0 +1,245 @@
+openapi: 3.1.0
+info:
+  title: Assured
+  version: 5.0.0
+  description: >
+    Mock service for stubbing REST endpoints, relaying callbacks, and recording calls.
+servers:
+  - url: http://{host}:{port}
+    description: Replace host/port with the running server address.
+    variables:
+      host:
+        default: localhost
+      port:
+        default: "8080"
+tags:
+  - name: Assured
+    description: Manage stub definitions and recorded calls.
+  - name: Stubbed
+    description: Dynamic endpoints that replay previously stubbed calls.
+paths:
+  /assured/health:
+    get:
+      tags: [Assured]
+      summary: Check service health
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is ready.
+  /assured/given:
+    post:
+      tags: [Assured]
+      summary: Create or update a stubbed call
+      description: set a stubbed call definition.
+      operationId: createStubbedCall
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Call"
+      responses:
+        "200":
+          description: Stub stored successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Call"
+        "400":
+          description: Invalid stub definition.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /assured/verify:
+    post:
+      tags: [Assured]
+      summary: List recorded calls for a stub
+      description: >
+        Returns the recorded requests that matched a method/path pair. Returns 404 if call tracking
+        is disabled on the server and 200 with `null` when no calls have been captured yet.
+      operationId: verifyCalls
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallKey"
+      responses:
+        "200":
+          description: Recorded calls (may be `null` when none exist).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Call"
+                nullable: true
+        "400":
+          description: Invalid verification request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: Call tracking is disabled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /assured/clear:
+    post:
+      tags: [Assured]
+      summary: Clear a specific stub and its recordings
+      operationId: clearStub
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallKey"
+      responses:
+        "200":
+          description: Stub and recorded calls cleared. Body is empty.
+        "400":
+          description: Invalid clear request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /assured/clearall:
+    post:
+      tags: [Assured]
+      summary: Clear every stored stub and recording
+      operationId: clearAllStubs
+      responses:
+        "200":
+          description: All stubs and recordings cleared. Body is empty.
+  "/{stubPath}":
+    parameters:
+      - name: stubPath
+        in: path
+        required: true
+        description: >
+          Catch-all path fragment. Provide the exact path you stubbed (the server trims leading/trailing `/`).
+          This template represents any nested path; do not URL-encode slashes.
+        schema:
+          type: string
+    get:
+      $ref: "#/components/x-stub-operation"
+    post:
+      $ref: "#/components/x-stub-operation"
+    put:
+      $ref: "#/components/x-stub-operation"
+    patch:
+      $ref: "#/components/x-stub-operation"
+    delete:
+      $ref: "#/components/x-stub-operation"
+    options:
+      $ref: "#/components/x-stub-operation"
+    head:
+      $ref: "#/components/x-stub-operation"
+components:
+  x-stub-operation:
+    tags: [Stubbed]
+    summary: Replay a stubbed response
+    description: >
+      Matches the incoming method/path against stored stubs. When a stub is found, the server rotates
+      the queue for that key, applies the stubbed headers/status/body, waits for any configured delay,
+      and dispatches callbacks asynchronously. Query parameters and headers are recorded but do not affect matching.
+    operationId: callStubbedEndpoint
+    responses:
+      default:
+        description: Response as defined by the stub (status, headers, and body are emitted verbatim).
+        content:
+          "*/*":
+            schema:
+              type: string
+              description: Arbitrary payload as provided by the stub definition.
+      "404":
+        description: No stub matched the method/path.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/APIError"
+  schemas:
+    Call:
+      type: object
+      required: [path]
+      properties:
+        path:
+          type: string
+          description: Path segment to match; leading/trailing slashes are trimmed server-side.
+        method:
+          type: string
+          description: >
+            HTTP method to match. Defaults to GET in `/assured/given` when omitted. Must be supplied for verification and clearing.
+        status_code:
+          type: integer
+          format: int32
+          description: >
+            HTTP status code returned when the stub matches. When absent or zero, the server responds with 200.
+        delay:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Delay (seconds) before the stubbed response is sent.
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Headers applied to the stubbed response.
+        query:
+          type: object
+          additionalProperties:
+            type: string
+          description: Recorded query parameters from inbound calls; ignored for matching.
+        response:
+          type: string
+          description: >
+            Response payload. Accepts plain strings, base64-encoded data, or, when preloading from disk, a file path that the server will dereference.
+        callbacks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Callback"
+          description: Optional callbacks invoked asynchronously after the stub response is delivered.
+    Callback:
+      type: object
+      required: [target, method]
+      properties:
+        target:
+          type: string
+          format: uri
+          description: Destination URL for the callback.
+        method:
+          type: string
+          description: HTTP method used when sending the callback.
+        delay:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Delay (seconds) before the callback is triggered.
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Headers added to the callback request.
+        response:
+          type: string
+          description: Payload sent with the callback request.
+    CallKey:
+      type: object
+      required: [method, path]
+      properties:
+        method:
+          type: string
+          description: HTTP method associated with the stub.
+        path:
+          type: string
+          description: Path associated with the stub; leading/trailing slashes are trimmed server-side.
+    APIError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message.
