@@ -42,9 +42,9 @@ func main() {
 		assured.WithTLS(*tlsCert, *tlsKey))
 
 	go func() {
-		slog.With("port", a.Server.Port).Info("starting go rest assured server")
+		slog.With("port", a.Server.Port).Info("starting assured server")
 		if err := a.Serve(); err != nil {
-			slog.With("error", err).Info("rest assured server stopped serving")
+			slog.With("error", err).Info("assured server stopped serving")
 		}
 	}()
 
@@ -71,5 +71,5 @@ func main() {
 	if err := a.Close(); err != nil {
 		slog.With("error", err).Info("failed to close assured")
 	}
-	slog.Info("exiting go rest assured")
+	slog.Info("exiting assured")
 }
