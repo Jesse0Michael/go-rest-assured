@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 )
 
 // Client
@@ -36,21 +37,8 @@ func (c *Client) Given(ctx context.Context, calls ...Call) error {
 			return err
 		}
 
-		resp, err := c.httpClient.Do(req)
-		if err != nil {
+		if err := c.process(req, nil); err != nil {
 			return err
-		}
-		defer func() { _ = resp.Body.Close() }()
-
-		if resp.StatusCode != http.StatusOK {
-			var apiError APIError
-			if err = json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
-				return err
-			}
-			if apiError.Error != "" {
-				return errors.New(apiError.Error)
-			}
-			return fmt.Errorf("failure to stub assured call")
 		}
 	}
 	return nil
@@ -71,25 +59,9 @@ func (c *Client) Verify(ctx context.Context, method, path string) ([]Call, error
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		var apiError APIError
-		if err = json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
-			return nil, err
-		}
-		if apiError.Error != "" {
-			return nil, errors.New(apiError.Error)
-		}
-		return nil, fmt.Errorf("failure to stub assured call")
-	}
 
 	var calls []Call
-	if err = json.NewDecoder(resp.Body).Decode(&calls); err != nil {
+	if err = c.process(req, &calls); err != nil {
 		return nil, err
 	}
 	return calls, nil
@@ -110,24 +82,7 @@ func (c *Client) Clear(ctx context.Context, method, path string) error {
 	if err != nil {
 		return err
 	}
-	resp, err := c.httpClient.Do(req)
-
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		var apiError APIError
-		if err = json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
-			return err
-		}
-		if apiError.Error != "" {
-			return errors.New(apiError.Error)
-		}
-		return fmt.Errorf("failure to clear assured call")
-	}
-	return err
+	return c.process(req, nil)
 }
 
 // ClearAll clears all assured calls
@@ -136,22 +91,34 @@ func (c *Client) ClearAll(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	resp, err := c.httpClient.Do(req)
+	return c.process(req, nil)
+}
 
+// process executes an HTTP request, applies shared error handling, and optionally unmarshals JSON into out.
+func (c *Client) process(req *http.Request, out any) error {
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		var apiError APIError
-		if err = json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		message := "unexpected response"
+		if len(bodyBytes) > 0 {
+			var apiError APIError
+			if err = json.Unmarshal(bodyBytes, &apiError); err == nil && apiError.Error != "" {
+				message = apiError.Error
+			} else if trimmed := strings.TrimSpace(string(bodyBytes)); trimmed != "" {
+				message = trimmed
+			}
+		}
+		return fmt.Errorf("%d:%s", resp.StatusCode, message)
+	}
+	if out != nil {
+		if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
 			return err
 		}
-		if apiError.Error != "" {
-			return errors.New(apiError.Error)
-		}
-		return fmt.Errorf("failure to clear all assured calls")
 	}
-	return err
+	return nil
 }
