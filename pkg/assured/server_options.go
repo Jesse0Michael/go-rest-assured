@@ -6,19 +6,19 @@ import (
 	"net/http"
 )
 
-var DefaultOptions = Options{
+var DefaultServerOptions = ServerOptions{
 	httpClient:     http.DefaultClient,
 	host:           "localhost",
 	trackMadeCalls: true,
 	logger:         slog.Default(),
 }
 
-// Option is a function on that configures rest assured settings
-type Option func(*Options)
+// ServerOption configures the server behavior.
+type ServerOption func(*ServerOptions)
 
-// Options can be used to configure the rest assured client.
-type Options struct {
-	// httpClient used to interact with the rest assured server
+// ServerOptions can be used to configure the rest assured server.
+type ServerOptions struct {
+	// httpClient used to interact with the rest assured server.
 	httpClient *http.Client
 
 	// set the hostname to use in the client. Defaults to localhost.
@@ -36,20 +36,26 @@ type Options struct {
 	// trackMadeCalls toggles storing the requests made against the rest assured server. Defaults to true.
 	trackMadeCalls bool
 
-	// logger to use for logging. Defaults the default logger.
+	// logger to use for logging. Defaults to the default logger.
 	logger *slog.Logger
 }
 
+func (o *ServerOptions) applyOptions(opts ...ServerOption) {
+	for _, opt := range opts {
+		opt(o)
+	}
+}
+
 // WithHTTPClient sets the http client option.
-func WithHTTPClient(c http.Client) Option {
-	return func(o *Options) {
+func WithHTTPClient(c http.Client) ServerOption {
+	return func(o *ServerOptions) {
 		o.httpClient = &c
 	}
 }
 
 // WithHost sets the host option.
-func WithHost(h string) Option {
-	return func(o *Options) {
+func WithHost(h string) ServerOption {
+	return func(o *ServerOptions) {
 		if h != "" {
 			o.host = h
 		}
@@ -57,8 +63,8 @@ func WithHost(h string) Option {
 }
 
 // WithPort sets the port option.
-func WithPort(p int) Option {
-	return func(o *Options) {
+func WithPort(p int) ServerOption {
+	return func(o *ServerOptions) {
 		if p != 0 {
 			o.Port = p
 		}
@@ -66,40 +72,38 @@ func WithPort(p int) Option {
 }
 
 // WithTLS sets the tls options.
-func WithTLS(cert, key string) Option {
-	return func(o *Options) {
+func WithTLS(cert, key string) ServerOption {
+	return func(o *ServerOptions) {
 		o.tlsCertFile = cert
 		o.tlsKeyFile = key
 	}
 }
 
 // WithCallTracking sets the trackMadeCalls option.
-func WithCallTracking(t bool) Option {
-	return func(o *Options) {
+func WithCallTracking(t bool) ServerOption {
+	return func(o *ServerOptions) {
 		o.trackMadeCalls = t
 	}
 }
 
-// WithCallTracking sets the trackMadeCalls option.
-func WithLogger(l *slog.Logger) Option {
-	return func(o *Options) {
+// WithLogger sets the logger option.
+func WithLogger(l *slog.Logger) ServerOption {
+	return func(o *ServerOptions) {
 		if l != nil {
 			o.logger = l
 		}
 	}
 }
 
-func (o *Options) applyOptions(opts ...Option) {
-	for _, opt := range opts {
-		opt(o)
-	}
-}
-
-// url returns the url to used by the client internally
-func (o *Options) url() string {
+// url returns the url to used by the client internally.
+func (o *ServerOptions) url() string {
 	schema := "http"
 	if o.tlsCertFile != "" && o.tlsKeyFile != "" {
 		schema = "https"
 	}
-	return fmt.Sprintf("%s://%s:%d", schema, o.host, o.Port)
+	return buildURL(schema, o.host, o.Port)
+}
+
+func buildURL(schema, host string, port int) string {
+	return fmt.Sprintf("%s://%s:%d", schema, host, port)
 }

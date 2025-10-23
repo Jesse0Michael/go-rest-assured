@@ -42,7 +42,7 @@ func main() {
 		assured.WithTLS(*tlsCert, *tlsKey))
 
 	go func() {
-		slog.InfoContext(ctx, "starting assured server", "port", a.Server.Port)
+		slog.InfoContext(ctx, "starting assured server", "port", a.Port)
 		if err := a.Serve(); err != nil {
 			slog.InfoContext(ctx, "assured server stopped serving", "error", err)
 		}

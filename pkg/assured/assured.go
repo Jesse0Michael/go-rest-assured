@@ -5,9 +5,13 @@ type Assured struct {
 	*Server
 }
 
-func NewAssured(opts ...Option) *Assured {
+func NewAssured(opts ...ServerOption) *Assured {
 	s := NewServer(opts...)
-	c := NewClient(append(opts, WithPort(s.Port))...)
+	clientOpts := []ClientOption{WithClientBaseURL(s.URL())}
+	if s.httpClient != nil {
+		clientOpts = append(clientOpts, WithClientHTTPClient(*s.httpClient))
+	}
+	c := NewClient(clientOpts...)
 	return &Assured{
 		Client: c,
 		Server: s,

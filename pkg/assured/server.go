@@ -7,7 +7,7 @@ import (
 )
 
 type Server struct {
-	Options
+	ServerOptions
 	listener     net.Listener
 	router       *http.ServeMux
 	assuredCalls *CallStore
@@ -15,11 +15,11 @@ type Server struct {
 }
 
 // NewServer creates a new go-rest-assured server
-func NewServer(opts ...Option) *Server {
+func NewServer(opts ...ServerOption) *Server {
 	s := Server{
-		Options:      DefaultOptions,
-		assuredCalls: NewCallStore(),
-		madeCalls:    NewCallStore(),
+		ServerOptions: DefaultServerOptions,
+		assuredCalls:  NewCallStore(),
+		madeCalls:     NewCallStore(),
 	}
 	s.applyOptions(opts...)
 	s.router = routes(s.logger, s.assuredCalls, s.madeCalls, s.httpClient, s.trackMadeCalls)

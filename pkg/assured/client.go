@@ -10,15 +10,15 @@ import (
 	"strings"
 )
 
-// Client
+// Client wraps client specific configuration and behaviour.
 type Client struct {
-	Options
+	ClientOptions
 }
 
 // NewClient creates a new go-rest-assured client
-func NewClient(opts ...Option) *Client {
+func NewClient(opts ...ClientOption) *Client {
 	c := &Client{
-		Options: DefaultOptions,
+		ClientOptions: DefaultClientOptions,
 	}
 	c.applyOptions(opts...)
 	return c
@@ -32,7 +32,7 @@ func (c *Client) Given(ctx context.Context, calls ...Call) error {
 			return err
 		}
 
-		req, err := http.NewRequestWithContext(ctx, call.Method, fmt.Sprintf("%s/assured/given", c.url()), bytes.NewReader(b))
+		req, err := http.NewRequestWithContext(ctx, call.Method, c.assuredURL("assured/given"), bytes.NewReader(b))
 		if err != nil {
 			return err
 		}
@@ -55,7 +55,7 @@ func (c *Client) Verify(ctx context.Context, method, path string) ([]Call, error
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("%s/assured/verify", c.url()), bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.assuredURL("assured/verify"), bytes.NewBuffer(b))
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (c *Client) Clear(ctx context.Context, method, path string) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("%s/assured/clear", c.url()), bytes.NewReader(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.assuredURL("assured/clear"), bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
@@ -87,11 +87,16 @@ func (c *Client) Clear(ctx context.Context, method, path string) error {
 
 // ClearAll clears all assured calls
 func (c *Client) ClearAll(ctx context.Context) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("%s/assured/clearall", c.url()), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.assuredURL("assured/clearall"), nil)
 	if err != nil {
 		return err
 	}
 	return c.process(req, nil)
+}
+
+func (c *Client) assuredURL(path string) string {
+	base := strings.TrimRight(c.baseURL, "/")
+	return fmt.Sprintf("%s/%s", base, strings.TrimPrefix(path, "/"))
 }
 
 // process executes an HTTP request, applies shared error handling, and optionally unmarshals JSON into out.

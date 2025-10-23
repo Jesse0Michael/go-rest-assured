@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -265,7 +266,7 @@ func TestAssuredGivenCallbackMissingTarget(t *testing.T) {
 	err := assured.Given(t.Context(), call)
 
 	require.Error(t, err)
-	require.Equal(t, "cannot stub callback without target", err.Error())
+	require.Equal(t, "400:cannot stub callback without target", err.Error())
 }
 
 func TestAssuredGivenCallbackBadMethod(t *testing.T) {
@@ -282,7 +283,7 @@ func TestAssuredGivenCallbackBadMethod(t *testing.T) {
 	err := assured.Given(t.Context(), call)
 
 	require.Error(t, err)
-	require.Equal(t, "net/http: invalid method \"\\\"\"", err.Error())
+	require.Equal(t, "400:net/http: invalid method \"\\\"\"", err.Error())
 }
 
 func TestAssuredBadRequestFailure(t *testing.T) {
@@ -303,15 +304,15 @@ func TestAssuredBadRequestFailure(t *testing.T) {
 	calls, err := assured.Verify(t.Context(), "\"", "goat/path")
 
 	require.Error(t, err)
-	require.Equal(t, `net/http: invalid method "\""`, err.Error())
+	require.Equal(t, `400:net/http: invalid method "\""`, err.Error())
 	require.Nil(t, calls)
 
 	err = assured.Clear(t.Context(), "\"", "goat/path")
 
 	require.Error(t, err)
-	require.Equal(t, `net/http: invalid method "\""`, err.Error())
+	require.Equal(t, `400:net/http: invalid method "\""`, err.Error())
 
-	assured.Client.Port = -1
+	assured.baseURL = "http://localhost:-1"
 	err = assured.ClearAll(t.Context())
 
 	require.Error(t, err)
@@ -343,7 +344,7 @@ func TestAssuredVerifyBodyFailure(t *testing.T) {
 	index := strings.LastIndex(testServer.URL, ":")
 	port, err := strconv.ParseInt(testServer.URL[index+1:], 10, 64)
 	require.NoError(t, err)
-	assured.Client.Port = int(port)
+	assured.baseURL = fmt.Sprintf("http://localhost:%d", port)
 
 	calls, err := assured.Verify(t.Context(), "BODY", "bad+body")
 
