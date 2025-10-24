@@ -1,4 +1,4 @@
-module github.com/jesse0michael/go-rest-assured/v4
+module github.com/jesse0michael/go-rest-assured/v5
 
 go 1.25
 

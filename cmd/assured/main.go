@@ -10,7 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jesse0michael/go-rest-assured/v4/pkg/assured"
+	"github.com/jesse0michael/go-rest-assured/v5/pkg/assured"
 )
 
 // Preload is the expected format for preloading assured endpoints through the go rest assured application
