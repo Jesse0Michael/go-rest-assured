@@ -11,19 +11,19 @@ import (
 
 func routes(
 	logger *slog.Logger,
-	assuredCalls *CallStore,
-	madeCalls *CallStore,
+	calls *Store[Call],
+	records *Store[Record],
 	httpClient *http.Client,
-	trackMadeCalls bool,
+	trackRecords bool,
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/assured/health", handleHealth)
-	mux.HandleFunc("/assured/given", handleGiven(logger, assuredCalls))
-	mux.HandleFunc("/assured/verify", handleVerify(madeCalls, trackMadeCalls))
-	mux.HandleFunc("/assured/clear", handleClear(logger, assuredCalls, madeCalls))
-	mux.HandleFunc("/assured/clearall", handleClearAll(logger, assuredCalls, madeCalls))
-	mux.HandleFunc("/", handleWhen(logger, httpClient, assuredCalls, madeCalls, trackMadeCalls))
+	mux.HandleFunc("/assured/given", handleGiven(logger, calls))
+	mux.HandleFunc("/assured/verify", handleVerify(records, trackRecords))
+	mux.HandleFunc("/assured/clear", handleClear(logger, calls, records))
+	mux.HandleFunc("/assured/clearall", handleClearAll(logger, calls, records))
+	mux.HandleFunc("/", handleWhen(logger, httpClient, calls, records, trackRecords))
 
 	return mux
 }
@@ -45,9 +45,9 @@ func encode[T any](w http.ResponseWriter, status int, v T) error {
 	return nil
 }
 
-// decodeAssuredCall converts an http request into an assured Call object
-func decodeAssuredCall(req *http.Request) Call {
-	call := Call{
+// decodeAssuredRecord converts an http request into an assured Record object
+func decodeAssuredRecord(req *http.Request) Record {
+	record := Record{
 		Path:   strings.Trim(req.URL.Path, "/"),
 		Method: req.Method,
 	}
@@ -57,24 +57,24 @@ func decodeAssuredCall(req *http.Request) Call {
 	for key, value := range req.Header {
 		headers[key] = value[0]
 	}
-	call.Headers = headers
+	record.Headers = headers
 
 	// Set query
 	query := map[string]string{}
 	for key, value := range req.URL.Query() {
 		query[key] = value[0]
 	}
-	call.Query = query
+	record.Query = query
 
 	// Set response body
 	if req.Body != nil {
 		defer func() { _ = req.Body.Close() }()
 		if bytes, err := io.ReadAll(req.Body); err == nil {
-			call.Response = bytes
+			record.Body = bytes
 		}
 	}
 
-	return call
+	return record
 }
 
 // encodeAssuredCall writes the assured Call to the http response as it is intended to be stubbed

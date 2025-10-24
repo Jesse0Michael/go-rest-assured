@@ -8,19 +8,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCallID(t *testing.T) {
+func TestCallKey(t *testing.T) {
 	call := Call{
 		Path:   "/given/test/assured",
 		Method: http.MethodGet,
 	}
 
-	require.Equal(t, "GET:/given/test/assured", call.ID())
+	require.Equal(t, "GET:/given/test/assured", call.Key())
 }
 
-func TestCallIDNil(t *testing.T) {
+func TestCallKeyNil(t *testing.T) {
 	call := Call{}
 
-	require.Equal(t, ":", call.ID())
+	require.Equal(t, ":", call.Key())
 }
 
 func TestCallString(t *testing.T) {

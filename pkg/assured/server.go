@@ -8,21 +8,21 @@ import (
 
 type Server struct {
 	ServerOptions
-	listener     net.Listener
-	router       *http.ServeMux
-	assuredCalls *CallStore
-	madeCalls    *CallStore
+	listener net.Listener
+	router   *http.ServeMux
+	calls    *Store[Call]
+	records  *Store[Record]
 }
 
 // NewServer creates a new go-rest-assured server
 func NewServer(opts ...ServerOption) *Server {
 	s := Server{
 		ServerOptions: DefaultServerOptions,
-		assuredCalls:  NewCallStore(),
-		madeCalls:     NewCallStore(),
+		calls:         NewStore[Call](),
+		records:       NewStore[Record](),
 	}
 	s.applyOptions(opts...)
-	s.router = routes(s.logger, s.assuredCalls, s.madeCalls, s.httpClient, s.trackMadeCalls)
+	s.router = routes(s.logger, s.calls, s.records, s.httpClient, s.trackRecords)
 
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.Port))

@@ -18,7 +18,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleGiven is used to stub out a call for a given path
-func handleGiven(logger *slog.Logger, assuredCalls *CallStore) http.HandlerFunc {
+func handleGiven(logger *slog.Logger, calls *Store[Call]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		call, err := decode[Call](r)
 		if err != nil {
@@ -52,29 +52,29 @@ func handleGiven(logger *slog.Logger, assuredCalls *CallStore) http.HandlerFunc 
 			}
 		}
 
-		assuredCalls.Add(&call)
-		logger.InfoContext(r.Context(), "assured call set", "path", call.ID())
+		calls.Add(call)
+		logger.InfoContext(r.Context(), "assured call set", "key", call.Key())
 
 		_ = encode(w, http.StatusOK, call)
 	}
 }
 
 // handleWhen is used to respond to a given assured call
-func handleWhen(logger *slog.Logger, httpClient *http.Client, assuredCalls, madeCalls *CallStore, trackMadeCalls bool) http.HandlerFunc {
+func handleWhen(logger *slog.Logger, httpClient *http.Client, calls *Store[Call], records *Store[Record], trackRecords bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		call := decodeAssuredCall(r)
-		calls := assuredCalls.Get(call.ID())
-		if len(calls) == 0 {
-			logger.InfoContext(r.Context(), "assured call not found", "path", call.ID())
+		record := decodeAssuredRecord(r)
+		matched := calls.Get(record.Key())
+		if len(matched) == 0 {
+			logger.InfoContext(r.Context(), "assured call not found", "key", record.Key())
 			_ = encode(w, http.StatusNotFound, APIError{"no assured calls"})
 			return
 		}
 
-		if trackMadeCalls {
-			madeCalls.Add(&call)
+		if trackRecords {
+			records.Add(record)
 		}
-		assured := calls[0]
-		assuredCalls.Rotate(assured)
+		assured := matched[0]
+		calls.Rotate(assured)
 
 		// Trigger callbacks, if applicable
 		for _, callback := range assured.Callbacks {
@@ -84,13 +84,13 @@ func handleWhen(logger *slog.Logger, httpClient *http.Client, assuredCalls, made
 		// Delay response
 		time.Sleep(time.Duration(assured.Delay) * time.Second)
 
-		logger.InfoContext(r.Context(), "assured call responded", "path", call.ID())
+		logger.InfoContext(r.Context(), "assured call responded", "key", record.Key())
 		_ = encodeAssuredCall(w, assured)
 	}
 }
 
 // handleVerify returns all matching assured calls, used to verify a particular call
-func handleVerify(madeCalls *CallStore, trackMadeCalls bool) http.HandlerFunc {
+func handleVerify(records *Store[Record], trackRecords bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req, err := decode[Call](r)
 		if err != nil {
@@ -104,18 +104,18 @@ func handleVerify(madeCalls *CallStore, trackMadeCalls bool) http.HandlerFunc {
 			return
 		}
 
-		if !trackMadeCalls {
-			_ = encode(w, http.StatusNotFound, APIError{"tracking made calls is disabled"})
+		if !trackRecords {
+			_ = encode(w, http.StatusNotFound, APIError{"tracking records is disabled"})
 			return
 		}
 
-		calls := madeCalls.Get(req.ID())
+		calls := records.Get(req.Key())
 		_ = encodeAssuredCall(w, calls)
 	}
 }
 
 // handleClear is used to clear a specific assured call
-func handleClear(logger *slog.Logger, assuredCalls, madeCalls *CallStore) http.HandlerFunc {
+func handleClear(logger *slog.Logger, calls *Store[Call], records *Store[Record]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req, err := decode[Call](r)
 		if err != nil {
@@ -129,17 +129,17 @@ func handleClear(logger *slog.Logger, assuredCalls, madeCalls *CallStore) http.H
 			return
 		}
 
-		assuredCalls.Clear(req.ID())
-		madeCalls.Clear(req.ID())
-		logger.InfoContext(r.Context(), "cleared calls for path", "path", req.ID())
+		calls.Clear(req.Key())
+		records.Clear(req.Key())
+		logger.InfoContext(r.Context(), "cleared calls for path", "key", req.Key())
 	}
 }
 
 // handleClearAll is used to clear all assured calls
-func handleClearAll(logger *slog.Logger, assuredCalls, madeCalls *CallStore) http.HandlerFunc {
+func handleClearAll(logger *slog.Logger, calls *Store[Call], records *Store[Record]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		assuredCalls.ClearAll()
-		madeCalls.ClearAll()
+		calls.ClearAll()
+		records.ClearAll()
 		logger.InfoContext(r.Context(), "cleared all calls")
 	}
 }

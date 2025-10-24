@@ -29,8 +29,8 @@ paths:
   /assured/given:
     post:
       tags: [Assured]
-      summary: Create or update a stubbed call
-      description: set a stubbed call definition.
+      summary: Create or update a call
+      description: Set a call definition.
       operationId: createStubbedCall
       requestBody:
         required: true
@@ -40,7 +40,7 @@ paths:
               $ref: "#/components/schemas/Call"
       responses:
         "200":
-          description: Stub stored successfully.
+          description: Call stored successfully.
           content:
             application/json:
               schema:
@@ -73,7 +73,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Call"
+                  $ref: "#/components/schemas/Record"
                 nullable: true
         "400":
           description: Invalid verification request.
@@ -203,6 +203,30 @@ components:
           items:
             $ref: "#/components/schemas/Callback"
           description: Optional callbacks invoked asynchronously after the stub response is delivered.
+    Record:
+      type: object
+      required: [method, path]
+      properties:
+        path:
+          type: string
+          description: Path that was requested; leading/trailing slashes are trimmed server-side.
+        method:
+          type: string
+          description: HTTP method observed on the incoming request.
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Headers captured from the incoming request.
+        query:
+          type: object
+          additionalProperties:
+            type: string
+          description: Query parameters captured from the incoming request.
+        body:
+          type: string
+          format: byte
+          description: Base64-encoded body captured from the incoming request.
     Callback:
       type: object
       required: [target, method]
@@ -233,10 +257,10 @@ components:
       properties:
         method:
           type: string
-          description: HTTP method associated with the stub.
+          description: HTTP method associated with the call.
         path:
           type: string
-          description: Path associated with the stub; leading/trailing slashes are trimmed server-side.
+          description: Path associated with the call; leading/trailing slashes are trimmed server-side.
     APIError:
       type: object
       properties:

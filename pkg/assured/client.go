@@ -10,12 +10,12 @@ import (
 	"strings"
 )
 
-// Client wraps client specific configuration and behaviour.
+// Client wraps client specific configuration and behavior.
 type Client struct {
 	ClientOptions
 }
 
-// NewClient creates a new go-rest-assured client
+// NewClient creates a new assured client
 func NewClient(opts ...ClientOption) *Client {
 	c := &Client{
 		ClientOptions: DefaultClientOptions,
@@ -44,8 +44,8 @@ func (c *Client) Given(ctx context.Context, calls ...Call) error {
 	return nil
 }
 
-// Verify returns all of the calls made against a stubbed method and path
-func (c *Client) Verify(ctx context.Context, method, path string) ([]Call, error) {
+// Verify returns all of the records made against a stubbed method and path
+func (c *Client) Verify(ctx context.Context, method, path string) ([]Record, error) {
 	body := Call{
 		Method: method,
 		Path:   path,
@@ -60,11 +60,11 @@ func (c *Client) Verify(ctx context.Context, method, path string) ([]Call, error
 		return nil, err
 	}
 
-	var calls []Call
-	if err = c.process(req, &calls); err != nil {
+	var records []Record
+	if err = c.process(req, &records); err != nil {
 		return nil, err
 	}
-	return calls, nil
+	return records, nil
 }
 
 // Clear assured calls for a Method and Path

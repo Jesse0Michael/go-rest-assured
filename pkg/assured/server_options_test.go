@@ -48,7 +48,7 @@ func TestServerOptions_applyOptions(t *testing.T) {
 			name:   "with track made calls",
 			option: WithCallTracking(true),
 			want: ServerOptions{
-				trackMadeCalls: true,
+				trackRecords: true,
 			},
 		},
 		{

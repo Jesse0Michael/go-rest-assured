@@ -20,8 +20,8 @@ type Call struct {
 	Callbacks  []Callback        `json:"callbacks,omitempty"`
 }
 
-// ID is used as a key when managing stubbed and made calls
-func (c Call) ID() string {
+// Key is used as a matching string when selecting stubs
+func (c Call) Key() string {
 	return fmt.Sprintf("%s:%s", c.Method, c.Path)
 }
 
@@ -72,4 +72,17 @@ type Callback struct {
 	Delay    int               `json:"delay,omitempty"`
 	Headers  map[string]string `json:"headers"`
 	Response CallResponse      `json:"response,omitempty"`
+}
+
+// Record is a structure containing a the stored call that was made against the assured server
+type Record struct {
+	Path    string            `json:"path"`
+	Method  string            `json:"method"`
+	Headers map[string]string `json:"headers,omitempty"`
+	Query   map[string]string `json:"query,omitempty"`
+	Body    []byte            `json:"body,omitempty"`
+}
+
+func (r Record) Key() string {
+	return fmt.Sprintf("%s:%s", r.Method, r.Path)
 }

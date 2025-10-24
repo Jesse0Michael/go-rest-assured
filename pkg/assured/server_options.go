@@ -7,10 +7,10 @@ import (
 )
 
 var DefaultServerOptions = ServerOptions{
-	httpClient:     http.DefaultClient,
-	host:           "localhost",
-	trackMadeCalls: true,
-	logger:         slog.Default(),
+	httpClient:   http.DefaultClient,
+	host:         "localhost",
+	trackRecords: true,
+	logger:       slog.Default(),
 }
 
 // ServerOption configures the server behavior.
@@ -33,8 +33,8 @@ type ServerOptions struct {
 	// tlsKeyFile is the location of the tls key for serving https.
 	tlsKeyFile string
 
-	// trackMadeCalls toggles storing the requests made against the rest assured server. Defaults to true.
-	trackMadeCalls bool
+	// trackRecords toggles storing the requests made against the assured server. Defaults to true.
+	trackRecords bool
 
 	// logger to use for logging. Defaults to the default logger.
 	logger *slog.Logger
@@ -82,7 +82,7 @@ func WithTLS(cert, key string) ServerOption {
 // WithCallTracking sets the trackMadeCalls option.
 func WithCallTracking(t bool) ServerOption {
 	return func(o *ServerOptions) {
-		o.trackMadeCalls = t
+		o.trackRecords = t
 	}
 }
 
