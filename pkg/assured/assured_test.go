@@ -60,26 +60,26 @@ func TestAssured(t *testing.T) {
 
 	calls, err := assured.Verify(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
-	require.Equal(t, []Call{
+	require.Equal(t, []Record{
 		{
-			Method:   http.MethodGet,
-			Path:     "test/assured",
-			Response: []byte(`{"calling":"you"}`),
-			Headers:  map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}},
+			Method:  http.MethodGet,
+			Path:    "test/assured",
+			Body:    []byte(`{"calling":"you"}`),
+			Headers: map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}},
 		{
-			Method:   http.MethodGet,
-			Path:     "test/assured",
-			Response: []byte(`{"calling":"again"}`),
-			Headers:  map[string]string{"Content-Length": "19", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
+			Method:  http.MethodGet,
+			Path:    "test/assured",
+			Body:    []byte(`{"calling":"again"}`),
+			Headers: map[string]string{"Content-Length": "19", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
 	calls, err = assured.Verify(t.Context(), http.MethodPost, "teapot/assured")
 	require.NoError(t, err)
-	require.Equal(t, []Call{
+	require.Equal(t, []Record{
 		{
-			Method:   http.MethodPost,
-			Path:     "teapot/assured",
-			Response: []byte(`{"calling":"here"}`),
-			Headers:  map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
+			Method:  http.MethodPost,
+			Path:    "teapot/assured",
+			Body:    []byte(`{"calling":"here"}`),
+			Headers: map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"}}}, calls)
 
 	err = assured.Clear(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
@@ -90,12 +90,12 @@ func TestAssured(t *testing.T) {
 
 	calls, err = assured.Verify(t.Context(), http.MethodPost, "teapot/assured")
 	require.NoError(t, err)
-	require.Equal(t, []Call{
+	require.Equal(t, []Record{
 		{
-			Method:   http.MethodPost,
-			Path:     "teapot/assured",
-			Response: []byte(`{"calling":"here"}`),
-			Headers:  map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
+			Method:  http.MethodPost,
+			Path:    "teapot/assured",
+			Body:    []byte(`{"calling":"here"}`),
+			Headers: map[string]string{"Content-Length": "18", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 		},
 	}, calls)
 
@@ -137,12 +137,12 @@ func TestAssuredTLS(t *testing.T) {
 
 	calls, err := assured.Verify(t.Context(), http.MethodGet, "test/assured")
 	require.NoError(t, err)
-	require.Equal(t, []Call{
+	require.Equal(t, []Record{
 		{
-			Method:   http.MethodGet,
-			Path:     "test/assured",
-			Response: []byte(`{"calling":"you"}`),
-			Headers:  map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
+			Method:  http.MethodGet,
+			Path:    "test/assured",
+			Body:    []byte(`{"calling":"you"}`),
+			Headers: map[string]string{"Content-Length": "17", "User-Agent": "Go-http-client/1.1", "Accept-Encoding": "gzip"},
 		},
 	}, calls)
 }
@@ -349,7 +349,7 @@ func TestAssuredVerifyBodyFailure(t *testing.T) {
 	calls, err := assured.Verify(t.Context(), "BODY", "bad+body")
 
 	require.Error(t, err)
-	require.Equal(t, `json: cannot unmarshal string into Go value of type []assured.Call`, err.Error())
+	require.Equal(t, `json: cannot unmarshal string into Go value of type []assured.Record`, err.Error())
 	require.Nil(t, calls)
 }
 

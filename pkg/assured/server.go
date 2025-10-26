@@ -55,5 +55,8 @@ func (s *Server) URL() string {
 
 // Close is used to close the running service
 func (s *Server) Close() error {
-	return s.listener.Close()
+	if s.listener != nil {
+		return s.listener.Close()
+	}
+	return nil
 }

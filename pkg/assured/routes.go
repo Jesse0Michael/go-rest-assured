@@ -80,7 +80,7 @@ func decodeAssuredRecord(req *http.Request) Record {
 // encodeAssuredCall writes the assured Call to the http response as it is intended to be stubbed
 func encodeAssuredCall(w http.ResponseWriter, i interface{}) error {
 	switch resp := i.(type) {
-	case *Call:
+	case Call:
 		for key, value := range resp.Headers {
 			w.Header().Set(key, value)
 		}
@@ -88,7 +88,7 @@ func encodeAssuredCall(w http.ResponseWriter, i interface{}) error {
 			w.WriteHeader(resp.StatusCode)
 		}
 		_, _ = w.Write([]byte(resp.String()))
-	case []*Call:
+	case []Record:
 		w.Header().Set("Content-Type", "application/json")
 		return json.NewEncoder(w).Encode(resp)
 	}
