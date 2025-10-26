@@ -1,3 +1,13 @@
+## [4.5.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.5.0...v4.5.1) (2025-10-26)
+
+### Bug Fixes
+
+- fix response encoding ([a54f68b](https://github.com/Jesse0Michael/go-rest-assured/commit/a54f68bdbfc5a43d9b85ef35eb029c4e9aaf3c5f))
+
+### Other
+
+- Merge branch 'main' of ssh://github.com/Jesse0Michael/go-rest-assured ([bf26629](https://github.com/Jesse0Michael/go-rest-assured/commit/bf266290b6125760ab677acc3c7c82dd5a2a8ac4))
+
 # [4.5.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.4.0...v4.5.0) (2025-10-26)
 
 ### Bug Fixes
