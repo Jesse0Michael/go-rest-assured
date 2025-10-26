@@ -1,3 +1,9 @@
+## [5.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v5.0.0...v5.0.1) (2025-10-26)
+
+### Bug Fixes
+
+- correct changelog ([559ed60](https://github.com/Jesse0Michael/go-rest-assured/commit/559ed602c624fde2df8a7571b4b1c7649ee873c5))
+
 # [5.0.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.4.0...v4.5.0) (2025-10-26)
 
 ### Bug Fixes
