@@ -1,3 +1,38 @@
+# [4.5.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.4.0...v4.5.0) (2025-10-26)
+
+### Bug Fixes
+
+- process server response ([efaefb5](https://github.com/Jesse0Michael/go-rest-assured/commit/efaefb5966f43c7f1452c94ed1e511e434b8ae81))
+
+### Build System
+
+- update docker build ([5f20315](https://github.com/Jesse0Michael/go-rest-assured/commit/5f20315c95e4e74c2b75351df7f849f5c65a033a))
+
+### Chores
+
+- use http package for methods ([5fde4be](https://github.com/Jesse0Michael/go-rest-assured/commit/5fde4be765bec407babe98b27620f39e855d6891))
+- organize logs ([687cfd3](https://github.com/Jesse0Michael/go-rest-assured/commit/687cfd329a049835a03e7f80624a51e2617bbb60))
+- update go version and mods ([87ddd94](https://github.com/Jesse0Michael/go-rest-assured/commit/87ddd945740dc53927f522ca7ac60542906c2f9d))
+- update module version from v4 to v5 in go.mod and import path ([9fe1c7d](https://github.com/Jesse0Michael/go-rest-assured/commit/9fe1c7d98c563238c66534c70c27a8ea37682eac))
+
+### Code Refactoring
+
+- rename Call to Record and update related methods and handlers ([4e4f117](https://github.com/Jesse0Michael/go-rest-assured/commit/4e4f117894803b2f9983b07356bdef16a3071429))
+
+### Documentation
+
+- generate an openapi spec ([28ac030](https://github.com/Jesse0Michael/go-rest-assured/commit/28ac03084567f3fcb32050b3ee06b9e748ec5d41))
+
+### Features
+
+- make assured commands explicit http endpoints ([f9d88b0](https://github.com/Jesse0Michael/go-rest-assured/commit/f9d88b0a571f4618adb4f8f138ea15c128a036c8))
+- separate client and server ([219315d](https://github.com/Jesse0Michael/go-rest-assured/commit/219315ddfe079c8f183d179e6fe26647a08c8a41))
+- separate server and client options ([a710297](https://github.com/Jesse0Michael/go-rest-assured/commit/a71029791d89a52b820eda0da1ee7fdcc6e67730))
+
+### Other
+
+- document assured changes ([6724b8d](https://github.com/Jesse0Michael/go-rest-assured/commit/6724b8d6bae516710b92224d5b4707eb2ca8f697))
+
 # [4.4.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v4.3.0...v4.4.0) (2024-06-29)
 
 ### Features
