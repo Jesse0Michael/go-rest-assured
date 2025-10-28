@@ -43,7 +43,7 @@ func main() {
 
 	go func() {
 		slog.InfoContext(ctx, "starting assured server", "port", a.Port)
-		if err := a.Serve(); err != nil {
+		if err := a.Serve(ctx); err != nil {
 			slog.InfoContext(ctx, "assured server stopped serving", "error", err)
 		}
 	}()

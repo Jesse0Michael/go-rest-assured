@@ -1,6 +1,7 @@
 package assured
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -36,16 +37,19 @@ func NewServer(opts ...ServerOption) *Server {
 }
 
 // Serve starts the Rest Assured client to begin listening on the application endpoints
-func (s *Server) Serve() error {
+func (s *Server) Serve(ctx context.Context) error {
 	if s.listener == nil {
 		return fmt.Errorf("invalid server")
 	}
 
-	if s.tlsCertFile != "" && s.tlsKeyFile != "" {
-		return http.ServeTLS(s.listener, s.router, s.tlsCertFile, s.tlsKeyFile)
-	} else {
-		return http.Serve(s.listener, s.router)
-	}
+	go func() {
+		if s.tlsCertFile != "" && s.tlsKeyFile != "" {
+			http.ServeTLS(s.listener, s.router, s.tlsCertFile, s.tlsKeyFile)
+		} else {
+			http.Serve(s.listener, s.router)
+		}
+	}()
+	return nil
 }
 
 // URL returns the url to use to test you stubbed endpoints

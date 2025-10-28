@@ -9,5 +9,5 @@ import (
 func TestClientInvalidPort(t *testing.T) {
 	client := NewServer(WithPort(-1))
 
-	require.Error(t, client.Serve())
+	require.Error(t, client.Serve(t.Context()))
 }

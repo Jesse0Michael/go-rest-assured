@@ -24,8 +24,7 @@ To understand how assured is working behind the scenes, or to use assured as a s
 import ("github.com/jesse0michael/go-rest-assured/v5/pkg/assured")
 
 // Create an Assured Client and Server
-a := assured.NewAssured()
-_ = a.Serve()
+a, err := assured.ServeAssured(ctx)
 defer a.Close()
 ```
 

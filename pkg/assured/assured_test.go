@@ -18,7 +18,7 @@ import (
 
 func TestAssured(t *testing.T) {
 	assured := NewAssured(WithPort(9091))
-	go func() { _ = assured.Serve() }()
+	go func() { _ = assured.Serve(t.Context()) }()
 	defer func() { _ = assured.Close() }()
 	time.Sleep(time.Second)
 
@@ -115,9 +115,9 @@ func TestAssuredTLS(t *testing.T) {
 	insecureClient := http.Client{Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}}
-	assured := NewAssured(WithTLS("testdata/localhost.pem", "testdata/localhost-key.pem"), WithPort(9092),
+	assured, err := ServeAssured(t.Context(), WithTLS("testdata/localhost.pem", "testdata/localhost-key.pem"), WithPort(9092),
 		WithHTTPClient(insecureClient))
-	go func() { _ = assured.Serve() }()
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 	time.Sleep(1 * time.Second)
 
@@ -164,12 +164,12 @@ func TestAssuredCallbacks(t *testing.T) {
 		require.Equal(t, []byte(`{"wait":"there's more"}`), body)
 		delayCalled = true
 	}))
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 	time.Sleep(time.Second)
 
-	err := assured.Given(t.Context(), Call{
+	err = assured.Given(t.Context(), Call{
 		Path:   "test/assured",
 		Method: http.MethodPost,
 		Delay:  2,
@@ -207,10 +207,10 @@ func TestAssuredCallbacks(t *testing.T) {
 }
 
 func TestAssuredClose(t *testing.T) {
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
-	assured2 := NewAssured()
-	go func() { _ = assured2.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
+	assured2, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	time.Sleep(time.Second)
 
 	require.NotEqual(t, assured.URL(), assured2.URL())
@@ -218,7 +218,7 @@ func TestAssuredClose(t *testing.T) {
 	require.NoError(t, assured.Given(t.Context(), *testCall1()))
 	require.NoError(t, assured2.Given(t.Context(), *testCall1()))
 
-	err := assured.Close()
+	err = assured.Close()
 	require.NoError(t, err)
 	time.Sleep(time.Second)
 	err = assured.Given(t.Context(), *testCall1())
@@ -236,12 +236,12 @@ func TestAssuredClose(t *testing.T) {
 }
 
 func TestAssuredGivenNoMethod(t *testing.T) {
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 	time.Sleep(time.Second)
 
-	err := assured.Given(t.Context(), Call{Path: "NoMethodMan"})
+	err = assured.Given(t.Context(), Call{Path: "NoMethodMan"})
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodGet, assured.URL()+"/NoMethodMan", nil)
@@ -259,11 +259,11 @@ func TestAssuredGivenCallbackMissingTarget(t *testing.T) {
 			{Method: http.MethodPost},
 		},
 	}
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 
-	err := assured.Given(t.Context(), call)
+	err = assured.Given(t.Context(), call)
 
 	require.Error(t, err)
 	require.Equal(t, "400:cannot stub callback without target", err.Error())
@@ -276,22 +276,22 @@ func TestAssuredGivenCallbackBadMethod(t *testing.T) {
 			{Method: "\"", Target: "http://localhost/"},
 		},
 	}
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 
-	err := assured.Given(t.Context(), call)
+	err = assured.Given(t.Context(), call)
 
 	require.Error(t, err)
 	require.Equal(t, "400:net/http: invalid method \"\\\"\"", err.Error())
 }
 
 func TestAssuredBadRequestFailure(t *testing.T) {
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 
-	err := assured.Given(t.Context(), Call{Method: "\"", Path: "goat/path"})
+	err = assured.Given(t.Context(), Call{Method: "\"", Path: "goat/path"})
 
 	require.Error(t, err)
 	require.Equal(t, `net/http: invalid method "\""`, err.Error())
@@ -320,9 +320,9 @@ func TestAssuredBadRequestFailure(t *testing.T) {
 }
 
 func TestAssuredVerifyHttpClientFailure(t *testing.T) {
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
-	err := assured.Close()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
+	err = assured.Close()
 	require.NoError(t, err)
 
 	calls, err := assured.Verify(t.Context(), "GONE", "not/started")
@@ -333,8 +333,8 @@ func TestAssuredVerifyHttpClientFailure(t *testing.T) {
 }
 
 func TestAssuredVerifyBodyFailure(t *testing.T) {
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -354,8 +354,8 @@ func TestAssuredVerifyBodyFailure(t *testing.T) {
 }
 
 func TestAssuredPathSanitization(t *testing.T) {
-	assured := NewAssured()
-	go func() { _ = assured.Serve() }()
+	assured, err := ServeAssured(t.Context())
+	require.NoError(t, err)
 	defer func() { _ = assured.Close() }()
 	time.Sleep(time.Second)
 
