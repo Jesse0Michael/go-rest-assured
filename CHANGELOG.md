@@ -1,3 +1,9 @@
+# [5.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v5.0.1...v5.1.0) (2025-10-28)
+
+### Features
+
+- serve assured method to start the server in initialization ([8eb5405](https://github.com/Jesse0Michael/go-rest-assured/commit/8eb54052a5e70b392d97947c1749c2e94e45c504))
+
 ## [5.0.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v5.0.0...v5.0.1) (2025-10-26)
 
 ### Bug Fixes
