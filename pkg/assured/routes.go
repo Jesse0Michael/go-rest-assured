@@ -48,8 +48,9 @@ func encode[T any](w http.ResponseWriter, status int, v T) error {
 // decodeAssuredRecord converts an http request into an assured Record object
 func decodeAssuredRecord(req *http.Request) Record {
 	record := Record{
-		Path:   strings.Trim(req.URL.Path, "/"),
-		Method: req.Method,
+		Path:    strings.Trim(req.URL.Path, "/"),
+		Method:  req.Method,
+		Cookies: req.Cookies(),
 	}
 
 	// Set headers

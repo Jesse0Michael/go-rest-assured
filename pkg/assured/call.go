@@ -3,6 +3,7 @@ package assured
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -81,6 +82,7 @@ type Record struct {
 	Headers map[string]string `json:"headers,omitempty"`
 	Query   map[string]string `json:"query,omitempty"`
 	Body    []byte            `json:"body,omitempty"`
+	Cookies []*http.Cookie    `json:"cookies,omitempty"`
 }
 
 func (r Record) Key() string {
