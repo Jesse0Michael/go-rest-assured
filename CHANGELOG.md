@@ -1,3 +1,9 @@
+# [5.2.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v5.1.0...v5.2.0) (2025-11-19)
+
+### Features
+
+- add cookies to tracked record ([2d7e6ad](https://github.com/Jesse0Michael/go-rest-assured/commit/2d7e6ad8554069c0c54e0a0fa263e642d559e133))
+
 # [5.1.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v5.0.1...v5.1.0) (2025-10-28)
 
 ### Features
