@@ -1,3 +1,9 @@
+## [5.2.1](https://github.com/Jesse0Michael/go-rest-assured/compare/v5.2.0...v5.2.1) (2025-11-19)
+
+### Other
+
+- Revert "feat: add cookies to tracked record" ([4958691](https://github.com/Jesse0Michael/go-rest-assured/commit/4958691a1df8667d6c2cc350f7e74a5a4376fae5))
+
 # [5.2.0](https://github.com/Jesse0Michael/go-rest-assured/compare/v5.1.0...v5.2.0) (2025-11-19)
 
 ### Features
